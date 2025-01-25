@@ -15,41 +15,41 @@ namespace OnlineLibrary.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container
+            
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerDocumentation();
 
-            // Configure DbContext
+            
             builder.Services.AddDbContext<OnlineLibraryIdentityDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
-            // Configure Identity
+            
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<OnlineLibraryIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Add custom services
+            
             builder.Services.AddApplicationServices();
             builder.Services.AddIdentityServices(builder.Configuration);
 
-            // Configure CORS
+            
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("MyCorsPolicy", policy =>
                 {
-                    policy.WithOrigins("https://example.com") // Replace with your allowed origins
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
+                    policy.AllowAnyOrigin() 
+                          .AllowAnyHeader() 
+                          .AllowAnyMethod(); 
                 });
             });
 
-            // Configure Distributed Cache (In-Memory for development)
-            builder.Services.AddDistributedMemoryCache(); // Add this line
+            
+            builder.Services.AddDistributedMemoryCache(); 
 
-            // Configure Session
+           
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -59,15 +59,14 @@ namespace OnlineLibrary.Web
 
             var app = builder.Build();
 
-            // Apply database seeding
+            
             await ApplySeeding.ApplySeedingAsync(app);
 
-            // Configure middleware pipeline
+            
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-                app.UseCors("MyCorsPolicy");
             }
             else
             {
@@ -75,8 +74,11 @@ namespace OnlineLibrary.Web
                 app.UseHsts();
             }
 
-            app.UseMiddleware<ErrorHandlingMiddleware>(); // Global error handling
-            app.UseSession(); // Enable session middleware
+            
+            app.UseCors("MyCorsPolicy");
+
+            app.UseMiddleware<ErrorHandlingMiddleware>(); 
+            app.UseSession();
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthentication();
@@ -95,7 +97,7 @@ namespace OnlineLibrary.Web
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "OnlineLibrary API", Version = "v1" });
 
-                // Add security definition for JWT (if applicable)
+                
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme.",
@@ -137,10 +139,10 @@ namespace OnlineLibrary.Web
                 var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-                // Ensure the database is created and migrations are applied
+                
                 await context.Database.EnsureCreatedAsync();
 
-                // Add your seeding logic here
+                //  seeding logic 
                 // await SeedData.SeedRolesAsync(roleManager);
                 // await SeedData.SeedUsersAsync(userManager);
 
@@ -149,7 +151,7 @@ namespace OnlineLibrary.Web
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error occurred while seeding the database.");
-                throw; // Re-throw the exception to stop the application if seeding is critical
+                throw; 
             }
         }
     }
