@@ -27,9 +27,18 @@ namespace OnlineLibrary.Service.UserService
             _tokenService = tokenService;
         }
 
+        public async Task<bool> ForgotPassword(ForgotPasswordDto input)
+        {
+            var user = await _userManager.FindByEmailAsync(input.Email);
+            if (user == null)
+                throw new Exception("Email not found.");
 
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            // الجديد
+            Console.WriteLine($"Password Reset Token: {token}");
+            return true;
+        }
 
-       
         public async Task<UserDto> Login(LoginDto input)
         {
             var user = await _userManager.FindByEmailAsync(input.Email);
@@ -74,6 +83,39 @@ namespace OnlineLibrary.Service.UserService
                 Email = appUser.Email!,
                 Token = _tokenService.GenerateToken(appUser),
             };
+        }
+
+        public async Task<bool> ResetPassword(ResetPasswordDto input)
+        {
+            var user = await _userManager.FindByIdAsync(input.Id.ToString());
+            if (user == null)
+                throw new Exception("Invalid User.");
+
+            var result = await _userManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
+            if (!result.Succeeded)
+                throw new Exception("Password reset failed.");
+
+            return true;
+        }
+
+
+        public async Task<bool> VerifyEmail(VerifyEmailDto input)
+        {
+            var user = await _userManager.FindByIdAsync(input.Id.ToString());
+            if (user == null)
+                throw new Exception("Invalid User.");
+
+            var result = await _userManager.ConfirmEmailAsync(user, input.Token);
+            if (!result.Succeeded)
+                throw new Exception("Email verification failed.");
+
+            return true;
+        }
+
+        public async Task<bool> Logout()
+        {
+            await _signInManager.SignOutAsync(); 
+            return true;
         }
     }
 }

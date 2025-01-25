@@ -32,7 +32,46 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(user);
         }
 
-        
+
+        [HttpPost]
+        public async Task<ActionResult> VerifyEmail(VerifyEmailDto input)
+        {
+            var result = await _userService.VerifyEmail(input);
+            if (!result)
+                return BadRequest(new UserException(400, "Email Verification Failed"));
+
+            return Ok(new { Message = "Email Verified Successfully" });
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ForgotPassword(ForgotPasswordDto input)
+        {
+            var result = await _userService.ForgotPassword(input);
+            if (!result)
+                return BadRequest(new UserException(400, "Email Not Found"));
+
+            return Ok(new { Message = "Password Reset Token Sent to Email" });
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ResetPassword(ResetPasswordDto input)
+        {
+            var result = await _userService.ResetPassword(input);
+            if (!result)
+                return BadRequest(new UserException(400, "Password Reset Failed"));
+
+            return Ok(new { Message = "Done" });
+        }
+        [HttpPost]
+        public async Task<ActionResult> Logout()
+        {
+            var logoutSuccess = await _userService.Logout();
+            if (!logoutSuccess)
+            {
+                return BadRequest("Logout failed");
+            }
+            return Ok("Successfully logged out");
+        }
 
     }
 }
