@@ -17,6 +17,14 @@ namespace OnlineLibrary.Data.Contexts
         public DbSet<PendingUserChange> PendingUserChanges { get; set; }
         public  DbSet<BooksDatum> BooksData { get; set; }
 
+
+        public DbSet<History> History { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<FavoriteBook> FavoriteBook { get; set; }
+        public DbSet<Wishlist> Wishlists { get; set; }
+        
+
+
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)
         {
