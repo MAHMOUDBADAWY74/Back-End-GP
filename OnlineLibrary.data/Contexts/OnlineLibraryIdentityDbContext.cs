@@ -14,6 +14,7 @@ namespace OnlineLibrary.Data.Contexts
 
     {
 
+        public DbSet<PendingUserChange> PendingUserChanges { get; set; }
 
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)

@@ -37,7 +37,7 @@ namespace OnlineLibrary.Web
             builder.Services.AddApplicationServices();
             builder.Services.AddIdentityServices(builder.Configuration);
 
-            //for chatgpt
+            
             // Register the DbContextFactory
             builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
 

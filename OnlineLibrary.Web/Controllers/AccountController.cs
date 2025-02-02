@@ -73,7 +73,31 @@ namespace OnlineLibrary.Web.Controllers
             return Ok("Successfully logged out");
         }
 
+
+
+        [HttpPost]
+        public async Task<IActionResult> RequestEditUser([FromBody] RequestEditUserDto request)
+        {
+            var result = await _userService.RequestEditUser(request.UserId, request.FieldName, request.NewValue);
+            if (!result)
+                return BadRequest("Failed to request edit.");
+
+            return Ok("Edit request submitted.");
+        }
+
+
+
+        [HttpPost("request-delete")]
+        public async Task<IActionResult> RequestDeleteUser([FromBody] RequestDeleteUserDto request)
+        {
+            var result = await _userService.RequestDeleteUser(request.UserId);
+            if (!result)
+                return BadRequest("Failed to request delete.");
+
+            return Ok("Delete request submitted.");
+        }
     }
 }
+
 
 

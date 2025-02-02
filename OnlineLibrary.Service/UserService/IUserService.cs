@@ -16,5 +16,9 @@ namespace OnlineLibrary.Service.UserService
         Task<bool> ForgotPassword(ForgotPasswordDto input);
         Task<bool> ResetPassword(ResetPasswordDto input);
         Task<bool> Logout();
+
+
+        Task<bool> RequestEditUser(string userId, string fieldName, string newValue);
+        Task<bool> RequestDeleteUser(string userId);
     }
 }
