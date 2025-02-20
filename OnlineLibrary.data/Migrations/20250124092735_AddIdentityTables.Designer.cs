@@ -12,7 +12,7 @@ using OnlineLibrary.Data.Contexts;
 namespace OnlineLibrary.Data.Migrations
 {
     [DbContext(typeof(OnlineLibraryIdentityDbContext))]
-    [Migration("20241122034220_AddIdentityTables")]
+    [Migration("20250124092735_AddIdentityTables")]
     partial class AddIdentityTables
     {
         /// <inheritdoc />
@@ -210,8 +210,8 @@ namespace OnlineLibrary.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
