@@ -36,20 +36,23 @@ namespace OnlineLibrary.Web
             builder.Services.AddIdentityServices(builder.Configuration);
 
             
+            builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
+
+            
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("MyCorsPolicy", policy =>
                 {
-                    policy.AllowAnyOrigin() 
-                          .AllowAnyHeader() 
-                          .AllowAnyMethod(); 
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
                 });
             });
 
             
-            builder.Services.AddDistributedMemoryCache(); 
+            builder.Services.AddDistributedMemoryCache();
 
-           
+            
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -76,8 +79,7 @@ namespace OnlineLibrary.Web
 
             
             app.UseCors("MyCorsPolicy");
-
-            app.UseMiddleware<ErrorHandlingMiddleware>(); 
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             app.UseSession();
             app.UseHttpsRedirection();
             app.UseRouting();
@@ -142,7 +144,7 @@ namespace OnlineLibrary.Web
                 
                 await context.Database.EnsureCreatedAsync();
 
-                //  seeding logic 
+                // Add seeding logic here if needed
                 // await SeedData.SeedRolesAsync(roleManager);
                 // await SeedData.SeedUsersAsync(userManager);
 
@@ -151,7 +153,7 @@ namespace OnlineLibrary.Web
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error occurred while seeding the database.");
-                throw; 
+                throw;
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OnlineLibrary.Service.AdminService;
 using OnlineLibrary.Service.HandleResponse;
 using OnlineLibrary.Service.TokenService;
 using OnlineLibrary.Service.UserService;
@@ -13,6 +14,7 @@ namespace OnlineLibrary.Web.Extensions
           
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAdminService, AdminService>();
             services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = actionContext =>
