@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.OpenApi.Models;
 using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
@@ -15,30 +16,30 @@ namespace OnlineLibrary.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            
+            // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerDocumentation();
 
-            
+            // Configure DbContext
             builder.Services.AddDbContext<OnlineLibraryIdentityDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
-            
+            // Configure Identity
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<OnlineLibraryIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
-            
+            // Add application services
             builder.Services.AddApplicationServices();
             builder.Services.AddIdentityServices(builder.Configuration);
 
-            
+            // Register the DbContextFactory
             builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
 
-            
+            // Configure CORS
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("MyCorsPolicy", policy =>
@@ -49,10 +50,10 @@ namespace OnlineLibrary.Web
                 });
             });
 
-            
+            // Configure Distributed Memory Cache
             builder.Services.AddDistributedMemoryCache();
 
-            
+            // Configure Session
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -62,10 +63,10 @@ namespace OnlineLibrary.Web
 
             var app = builder.Build();
 
-            
+            // Apply database seeding
             await ApplySeeding.ApplySeedingAsync(app);
 
-            
+            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -77,14 +78,26 @@ namespace OnlineLibrary.Web
                 app.UseHsts();
             }
 
-            
+            // Use CORS
             app.UseCors("MyCorsPolicy");
+
+            // Use custom middleware
             app.UseMiddleware<ErrorHandlingMiddleware>();
+
+            // Use session
             app.UseSession();
+
+            // Use HTTPS redirection
             app.UseHttpsRedirection();
+
+            // Use routing
             app.UseRouting();
+
+            // Use authentication and authorization
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // Map controllers
             app.MapControllers();
 
             app.Run();
@@ -99,7 +112,7 @@ namespace OnlineLibrary.Web
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "OnlineLibrary API", Version = "v1" });
 
-                
+                // Configure Bearer token authentication
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme.",
@@ -124,37 +137,6 @@ namespace OnlineLibrary.Web
             });
 
             return services;
-        }
-    }
-
-    public static class ApplySeeding
-    {
-        public static async Task ApplySeedingAsync(WebApplication app)
-        {
-            using var scope = app.Services.CreateScope();
-            var services = scope.ServiceProvider;
-            var logger = services.GetRequiredService<ILogger<Program>>();
-
-            try
-            {
-                var context = services.GetRequiredService<OnlineLibraryIdentityDbContext>();
-                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-                
-                await context.Database.EnsureCreatedAsync();
-
-                // Add seeding logic here if needed
-                // await SeedData.SeedRolesAsync(roleManager);
-                // await SeedData.SeedUsersAsync(userManager);
-
-                logger.LogInformation("Database seeding completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An error occurred while seeding the database.");
-                throw;
-            }
         }
     }
 

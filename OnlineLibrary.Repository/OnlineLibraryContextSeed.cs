@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using OnlineLibrary.Data.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OnlineLibrary.Repository
@@ -12,7 +8,8 @@ namespace OnlineLibrary.Repository
     {
         public static async Task SeedUserAsync(UserManager<ApplicationUser> userManager)
         {
-            if (userManager.Users.Any())
+            // Check if there are no users in the database
+            if (!userManager.Users.Any())
             {
                 var user = new ApplicationUser
                 {
@@ -29,13 +26,24 @@ namespace OnlineLibrary.Repository
                         Street = "105",
                         PostalCode = "123456"
                     }
-
                 };
-                Console.WriteLine("Users exist in database: " + userManager.Users.Any());
 
-                await userManager.CreateAsync(user, "Password123!");
+                // Create the user with a password
+                var result = await userManager.CreateAsync(user, "Password123!");
+
+                if (result.Succeeded)
+                {
+                    Console.WriteLine("User created successfully!");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to create user.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Users already exist in the database.");
             }
         }
-
     }
 }
