@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OnlineLibrary.Service.HandleResponse
 {
-    public class ValidationErrorResopnse : UserException
+    public class ValidationErrorResponse : UserException
     {
-        public ValidationErrorResopnse() : base(400)
-        {
 
+        public ValidationErrorResponse() : base(400)
+        {
+            Errors = []; // Initialize with an empty list
         }
+
+        public ValidationErrorResponse(IEnumerable<string> errors) : base(400)
+        {
+            Errors = errors;
+        }
+
         public IEnumerable<string> Errors { get; set; }
     }
 }
-

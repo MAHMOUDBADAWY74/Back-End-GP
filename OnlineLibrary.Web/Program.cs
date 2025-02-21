@@ -33,7 +33,7 @@ namespace OnlineLibrary.Web
                 .AddDefaultTokenProviders();
 
             // Add application services
-            builder.Services.AddApplicationServices();
+            IServiceCollection serviceCollection = GetServiceCollection(builder);
             builder.Services.AddIdentityServices(builder.Configuration);
 
             // Register the DbContextFactory
@@ -101,6 +101,11 @@ namespace OnlineLibrary.Web
             app.MapControllers();
 
             app.Run();
+
+            static IServiceCollection GetServiceCollection(WebApplicationBuilder builder)
+            {
+                return builder.Services.AddApplicationServices();
+            }
         }
     }
 
@@ -140,16 +145,10 @@ namespace OnlineLibrary.Web
         }
     }
 
-    public class ErrorHandlingMiddleware
+    public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ErrorHandlingMiddleware> _logger;
-
-        public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
-        {
-            _next = next;
-            _logger = logger;
-        }
+        private readonly RequestDelegate _next = next;
+        private readonly ILogger<ErrorHandlingMiddleware> _logger = logger;
 
         public async Task InvokeAsync(HttpContext context)
         {

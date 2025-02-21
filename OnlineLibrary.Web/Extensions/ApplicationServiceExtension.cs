@@ -9,23 +9,33 @@ namespace OnlineLibrary.Web.Extensions
     public  static class ApplicationServiceExtension
     {
 
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+#pragma warning disable IDE0060 // Remove unused parameter
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, KeyValuePair<string, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry?> model)
+#pragma warning restore IDE0060 // Remove unused parameter
         {
           
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAdminService, AdminService>();
-            services.Configure<ApiBehaviorOptions>(options =>
+            _ = services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = actionContext =>
                 {
+                    // Collect all validation errors
                     var errors = actionContext.ModelState
-                                .Where(model => model.Value?.Errors.Count() > 0)
-                                .SelectMany(model => model.Value.Errors)
-                                .Select(error => error.ErrorMessage).ToList();
+                        .Where(model => model.Value?.Errors?.Count > 0)  // Use null-conditional operator
+                        .SelectMany(model => model.Value!.Errors)         // Use null-forgiving operator (if sure)
+                        .Select(error => error.ErrorMessage)
+                        .ToList();
 
-                    var errorRespone = new ValidationErrorResopnse { Errors = errors };
+                    // Log validation errors
+                    var logger = actionContext.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                    logger.LogError("Validation errors occurred: {@Errors}", errors);
 
+                    // Create a validation error response
+                    var errorRespone = new ValidationErrorResponse { Errors = errors };
+
+                    // Return a 400 Bad Request with the error response
                     return new BadRequestObjectResult(errorRespone);
                 };
             });
