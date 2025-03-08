@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace OnlineLibrary.Data.Entities
 {
-    public class BaseEntity<T>
+    public class BaseEntity
     {
 
-        public T Id { get; set; }
-
+       
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }
