@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace OnlineLibrary.Data.ForTest
 {
-    internal class Test
+    public class Test
     {
         //hey
+       //shimaaaaaaaaa
+       IFormatProvider? FormatProvider { get; set; }
     }
 }
