@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OnlineLibrary.Repository.Interfaces;
+using OnlineLibrary.Repository.Repositories;
 using OnlineLibrary.Service.AdminService;
+using OnlineLibrary.Service.BookService;
+using OnlineLibrary.Service.BookService.Dtos;
 using OnlineLibrary.Service.HandleResponse;
 using OnlineLibrary.Service.TokenService;
 using OnlineLibrary.Service.UserService;
@@ -11,7 +15,9 @@ namespace OnlineLibrary.Web.Extensions
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-          
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddAutoMapper(typeof(BookProfile));
+            services.AddScoped<IBookService,BookService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAdminService, AdminService>();
