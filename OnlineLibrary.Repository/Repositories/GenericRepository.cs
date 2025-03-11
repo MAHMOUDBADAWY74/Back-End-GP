@@ -32,8 +32,10 @@ namespace OnlineLibrary.Repository.Repositories
 
         public async Task<IReadOnlyList<T>> GetAllAsync()
          => await _context.Set<T>().ToListAsync();
+         
 
-        public async Task<T> GetByIdAsync(int id)
+
+        public async Task<T> GetByIdAsync(long id)
          => await _context.Set<T>().FindAsync(id);
 
         public void Update(T entity)
