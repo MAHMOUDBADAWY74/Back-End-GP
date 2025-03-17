@@ -12,7 +12,7 @@ namespace OnlineLibrary.Service.BookService.Dtos
     {
         public BookProfile()
         {
-
+            CreateMap<BooksDatum, AddBookDetailsDto>().ReverseMap();
             CreateMap<BooksDatum, BookDetailsDto>().ReverseMap();
 
 
