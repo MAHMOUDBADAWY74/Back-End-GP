@@ -1,0 +1,248 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\gitmerge\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|e:\\gitmerge\\onlinelibrary.web\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|e:\\gitmerge\\onlinelibrary.service\\bookservice\\bookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\bookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|e:\\gitmerge\\onlinelibrary.service\\bookservice\\ibookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\ibookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|e:\\gitmerge\\onlinelibrary.service\\userservice\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\userservice\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|e:\\gitmerge\\onlinelibrary.service\\userservice\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\userservice\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|e:\\gitmerge\\onlinelibrary.service\\bookservice\\dtos\\bookprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\dtos\\bookprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|e:\\gitmerge\\onlinelibrary.service\\bookservice\\dtos\\bookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\dtos\\bookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|e:\\gitmerge\\onlinelibrary.service\\bookservice\\dtos\\addbookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\dtos\\addbookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|e:\\gitmerge\\onlinelibrary.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|e:\\gitmerge\\onlinelibrary.web\\extensions\\applicationserviceextension.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\extensions\\applicationserviceextension.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|e:\\gitmerge\\onlinelibrary.web\\helper\\applyseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\helper\\applyseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|e:\\gitmerge\\onlinelibrary.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 14,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IBookService.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\IBookService.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\IBookService.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\IBookService.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\IBookService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABAAAAAmAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T21:05:32.473Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IUserService.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Service\\UserService\\IUserService.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\UserService\\IUserService.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Service\\UserService\\IUserService.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\UserService\\IUserService.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T21:04:54.571Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UserService.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Service\\UserService\\UserService.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\UserService\\UserService.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Service\\UserService\\UserService.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\UserService\\UserService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T21:04:53.371Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "BookDetailsDto.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\Dtos\\BookDetailsDto.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\Dtos\\BookDetailsDto.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\Dtos\\BookDetailsDto.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\Dtos\\BookDetailsDto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T20:58:37.18Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AddBookDetailsDto.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\Dtos\\AddBookDetailsDto.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\Dtos\\AddBookDetailsDto.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\Dtos\\AddBookDetailsDto.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\Dtos\\AddBookDetailsDto.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T04:13:02.463Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Web\\appsettings.json",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\appsettings.json",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Web\\appsettings.json",
+              "RelativeToolTip": "OnlineLibrary.Web\\appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-03-16T04:08:36.775Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "BookProfile.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\Dtos\\BookProfile.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\Dtos\\BookProfile.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\Dtos\\BookProfile.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\Dtos\\BookProfile.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAABEAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T04:08:13.921Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "BooksController.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Web\\Controllers\\BooksController.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\Controllers\\BooksController.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Web\\Controllers\\BooksController.cs",
+              "RelativeToolTip": "OnlineLibrary.Web\\Controllers\\BooksController.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAuwBIAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T04:07:49.588Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BookService.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\BookService.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\BookService.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Service\\BookService\\BookService.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\BookService.cs",
+              "ViewState": "AQIAAB4AAAAAAAAAAAAYwB8AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T04:04:55.41Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ApplicationServiceExtension.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Web\\Extensions\\ApplicationServiceExtension.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\Extensions\\ApplicationServiceExtension.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Web\\Extensions\\ApplicationServiceExtension.cs",
+              "RelativeToolTip": "OnlineLibrary.Web\\Extensions\\ApplicationServiceExtension.cs",
+              "ViewState": "AQIAAA4AAAAAAAAAAAAAwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T04:06:15.593Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ApplySeeding.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Web\\Helper\\ApplySeeding.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\Helper\\ApplySeeding.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Web\\Helper\\ApplySeeding.cs",
+              "RelativeToolTip": "OnlineLibrary.Web\\Helper\\ApplySeeding.cs",
+              "ViewState": "AQIAABwAAAAAAAAAAAAQwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T04:06:10.233Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\gitmerge\\OnlineLibrary.Web\\Program.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\Program.cs",
+              "ToolTip": "E:\\gitmerge\\OnlineLibrary.Web\\Program.cs",
+              "RelativeToolTip": "OnlineLibrary.Web\\Program.cs",
+              "ViewState": "AQIAACUAAAAAAAAAAAAQwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-16T04:05:41.833Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\OnlineLibrary.Service",
+    "\\OnlineLibrary.Service\\BookService",
+    "\\OnlineLibrary.Service\\BookService\\Dtos",
+    "\\OnlineLibrary.Web",
+    "\\OnlineLibrary.Web\\Controllers"
+  ],
+  "SelectedNode": "\\OnlineLibrary.Web\\Controllers\\BooksController.cs",
+  "PreviewInSolutionExplorer": false
+}
