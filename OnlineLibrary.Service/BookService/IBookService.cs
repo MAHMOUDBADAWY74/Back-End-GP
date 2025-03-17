@@ -12,7 +12,7 @@ namespace OnlineLibrary.Service.BookService
 
         Task<BookDetailsDto> GetBookByIdAsync(long id);
         Task<IReadOnlyList<BookDetailsDto>> GetAllBooksAsync();
-        Task AddBookAsync(BookDetailsDto BookDetailsDto);
+        Task AddBookAsync(AddBookDetailsDto addBookDetailsDto);
         Task UpdateBookAsync(BookDetailsDto BookDetailsDto);
         Task DeleteBookAsync(long id);
     }
