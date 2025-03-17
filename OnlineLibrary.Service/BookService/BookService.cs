@@ -23,9 +23,9 @@ namespace OnlineLibrary.Service.BookService
             _mapper = mapper;
         }
 
-        public async Task AddBookAsync(BookDetailsDto BookDetailsDto)
+        public async Task AddBookAsync(AddBookDetailsDto addBookDetailsDto)
         {
-            var book = _mapper.Map<BooksDatum>(BookDetailsDto); 
+            var book = _mapper.Map<BooksDatum>(addBookDetailsDto); 
             await _unitOfWork.Repository<BooksDatum>().AddAsync(book);
             await _unitOfWork.CountAsync();
         }
