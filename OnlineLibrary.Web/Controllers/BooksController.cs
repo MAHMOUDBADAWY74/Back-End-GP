@@ -47,9 +47,9 @@ namespace OnlineLibrary.Web.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult> AddBook(BookDetailsDto BookDetailsDto)
+        public async Task<ActionResult> AddBook(AddBookDetailsDto addBookDetailsDto)
         {
-            await _bookService.AddBookAsync(BookDetailsDto);
+            await _bookService.AddBookAsync(addBookDetailsDto);
             return Ok();
         }
 
