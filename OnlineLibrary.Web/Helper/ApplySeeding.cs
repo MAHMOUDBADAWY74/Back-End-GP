@@ -20,15 +20,11 @@ namespace OnlineLibrary.Web.Helper
                 {
                     var context = services.GetRequiredService<OnlineLibraryIdentityDbContext>();
                     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-                    await OnlineLibraryContextSeed.SeedUserAsync(userManager);
 
-
-                 
                     await context.Database.MigrateAsync();
-
                     await OnlineLibraryContextSeed.SeedUserAsync(userManager);
-
                 }
+
                 catch (Exception ex)
                 {
                     
