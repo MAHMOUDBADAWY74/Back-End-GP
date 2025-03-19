@@ -34,6 +34,7 @@ namespace OnlineLibrary.Repository
                 Console.WriteLine("Users exist in database: " + userManager.Users.Any());
 
                 await userManager.CreateAsync(user, "Password123!");
+                //ghjyujk
             }
         }
 
