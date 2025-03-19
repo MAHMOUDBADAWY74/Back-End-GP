@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Repository.Interfaces;
+using OnlineLibrary.Repository.Specification;
 using OnlineLibrary.Service.BookService.Dtos;
 using System;
 using System.Collections.Generic;
@@ -42,16 +43,18 @@ namespace OnlineLibrary.Service.BookService
             await _unitOfWork.CountAsync();
         }
 
-        public async Task<IReadOnlyList<BookDetailsDto>> GetAllBooksAsync()
+       
+
+        public async Task<IReadOnlyList<GetAllBookDetailsDto>> GetAllBooksAsync()
         {
 
 
             var books = await _unitOfWork.Repository<BooksDatum>().GetAllAsync();
-            
-            return _mapper.Map<IReadOnlyList<BookDetailsDto>>(books);
+
+            return _mapper.Map<IReadOnlyList<GetAllBookDetailsDto>>(books);
         }
 
-        
+
 
         public async  Task<BookDetailsDto> GetBookByIdAsync(long id)
         {
@@ -77,17 +80,27 @@ namespace OnlineLibrary.Service.BookService
             await _unitOfWork.CountAsync();
         }
 
-       
+
+        public async Task<PaginatedBookDto> GetAllBooksAsyncUsingPaginated(int pageIndex, int pageSize)
+        {
+            var spec = new BookSpecification(pageIndex, pageSize);
+
+            // Get paginated books
+            var books = await _unitOfWork.Repository<BooksDatum>().GetAllWithSpecAsync(spec);
+
+            var totalCount = await _unitOfWork.Repository<BooksDatum>().CountWithSpecAsync(new BookSpecification(1, int.MaxValue));
+
+            return new PaginatedBookDto
+            {
+                Books = _mapper.Map<IReadOnlyList<GetAllBookDetailsDto>>(books),
+                TotalCount = totalCount,
+                PageNumber = pageIndex,
+                PageSize = pageSize
+            };
+        }
 
 
-        //public async Task<IReadOnlyList<BooksDatum>> GetAllBooksAsync()
-        //{
-        //    var books = await _unitOfWork.Repository<BooksDatum>().GetAllAsync();
 
-        //    Console.WriteLine($"Total Books Found: {books.Count}"); 
-
-        //    return books;
-        //}
 
     }
 }

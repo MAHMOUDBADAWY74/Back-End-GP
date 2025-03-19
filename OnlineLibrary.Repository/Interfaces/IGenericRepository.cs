@@ -1,5 +1,6 @@
 ﻿using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
+using OnlineLibrary.Repository.Specification;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,8 @@ namespace OnlineLibrary.Repository.Interfaces
         Task AddAsync(T entity);
         void Update(T entity);
         void Delete(T entity);
+
+        Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec);
+        Task<int> CountWithSpecAsync(ISpecification<T> spec);
     }
 }
