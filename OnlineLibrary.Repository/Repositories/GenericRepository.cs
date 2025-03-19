@@ -2,6 +2,7 @@
 using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Repository.Interfaces;
+using OnlineLibrary.Repository.Specification;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,5 +41,18 @@ namespace OnlineLibrary.Repository.Repositories
 
         public void Update(T entity)
         => _context.Set<T>().Update(entity);
+
+
+        public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec)
+        {
+            var query = SpecificationEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
+            return await query.ToListAsync();
+        }
+
+        public async Task<int> CountWithSpecAsync(ISpecification<T> spec)
+        {
+            var query = SpecificationEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
+            return await query.CountAsync();
+        }
     }
 }
