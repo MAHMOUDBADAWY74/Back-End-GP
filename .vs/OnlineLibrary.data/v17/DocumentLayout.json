@@ -1,0 +1,401 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.web\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\bookservice\\ibookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\ibookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\bookservice\\bookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\bookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.repository\\repositories\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|solutionrelative:onlinelibrary.repository\\repositories\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.repository\\interfaces\\igenericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|solutionrelative:onlinelibrary.repository\\interfaces\\igenericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\bookservice\\dtos\\paginatedbookdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\dtos\\paginatedbookdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.repository\\specification\\bookspecification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|solutionrelative:onlinelibrary.repository\\specification\\bookspecification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.repository\\specification\\specificationevaluator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|solutionrelative:onlinelibrary.repository\\specification\\specificationevaluator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.repository\\specification\\basespecification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|solutionrelative:onlinelibrary.repository\\specification\\basespecification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.repository\\specification\\ispecification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|solutionrelative:onlinelibrary.repository\\specification\\ispecification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.repository\\repositories\\unitofwork.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|solutionrelative:onlinelibrary.repository\\repositories\\unitofwork.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\bookservice\\dtos\\getallbookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\dtos\\getallbookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\adminservice\\iadminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\adminservice\\iadminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\adminservice\\adminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\adminservice\\adminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\adminservice\\dtos\\rejectchangedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\adminservice\\dtos\\rejectchangedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.repository\\onlinelibrary.repository.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{4BFF48B1-18C6-4DCA-ACB9-33168AAEA6DE}|OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj|solutionrelative:onlinelibrary.repository\\onlinelibrary.repository.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.web\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\bookservice\\dtos\\bookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\dtos\\bookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.service\\bookservice\\dtos\\addbookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CC7F3DC-67C9-482C-9408-CDAF77C2C227}|OnlineLibrary.Service\\OnlineLibrary.Service.csproj|solutionrelative:onlinelibrary.service\\bookservice\\dtos\\addbookdetailsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|c:\\users\\shimaa\\source\\repos\\back-end-gp\\onlinelibrary.web\\helper\\applyseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C3939F98-F7D4-4B59-8D18-B290B7A6E185}|OnlineLibrary.Web\\OnlineLibrary.Web.csproj|solutionrelative:onlinelibrary.web\\helper\\applyseeding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 13,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BooksController.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Web\\Controllers\\BooksController.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\Controllers\\BooksController.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Web\\Controllers\\BooksController.cs",
+              "RelativeToolTip": "OnlineLibrary.Web\\Controllers\\BooksController.cs",
+              "ViewState": "AQIAADcAAAAAAAAAAAAkwE4AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-19T19:52:07.601Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "IGenericRepository.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Interfaces\\IGenericRepository.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Repository\\Interfaces\\IGenericRepository.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Interfaces\\IGenericRepository.cs",
+              "RelativeToolTip": "OnlineLibrary.Repository\\Interfaces\\IGenericRepository.cs",
+              "ViewState": "AQIAAAcAAAAAAAAAAAAAABgAAAA9AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-19T19:49:58.881Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "SpecificationEvaluator.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Specification\\SpecificationEvaluator.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Repository\\Specification\\SpecificationEvaluator.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Specification\\SpecificationEvaluator.cs",
+              "RelativeToolTip": "OnlineLibrary.Repository\\Specification\\SpecificationEvaluator.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACMAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T23:45:34.159Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "GenericRepository.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Repositories\\GenericRepository.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Repository\\Repositories\\GenericRepository.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Repositories\\GenericRepository.cs",
+              "RelativeToolTip": "OnlineLibrary.Repository\\Repositories\\GenericRepository.cs",
+              "ViewState": "AQIAACUAAAAAAAAAAAAkwDgAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T22:46:04.339Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "BookSpecification.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Specification\\BookSpecification.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Repository\\Specification\\BookSpecification.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Specification\\BookSpecification.cs",
+              "RelativeToolTip": "OnlineLibrary.Repository\\Specification\\BookSpecification.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-19T19:07:07.64Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "PaginatedBookDto.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\Dtos\\PaginatedBookDto.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\Dtos\\PaginatedBookDto.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\Dtos\\PaginatedBookDto.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\Dtos\\PaginatedBookDto.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAABQAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-19T19:16:53.554Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "BookService.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\BookService.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\BookService.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\BookService.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\BookService.cs",
+              "ViewState": "AQIAAFAAAAAAAAAAAAAswFkAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T22:20:31.829Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Web\\appsettings.json",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\appsettings.json",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Web\\appsettings.json",
+              "RelativeToolTip": "OnlineLibrary.Web\\appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-03-17T22:09:17.293Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "BaseSpecification.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Specification\\BaseSpecification.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Repository\\Specification\\BaseSpecification.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Specification\\BaseSpecification.cs",
+              "RelativeToolTip": "OnlineLibrary.Repository\\Specification\\BaseSpecification.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T22:44:53.98Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IBookService.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\IBookService.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\IBookService.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\IBookService.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\IBookService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T22:19:57.649Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ISpecification.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Specification\\ISpecification.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Repository\\Specification\\ISpecification.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Specification\\ISpecification.cs",
+              "RelativeToolTip": "OnlineLibrary.Repository\\Specification\\ISpecification.cs",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAABMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T22:44:32.704Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "UnitOfWork.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Repositories\\UnitOfWork.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Repository\\Repositories\\UnitOfWork.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Repository\\Repositories\\UnitOfWork.cs",
+              "RelativeToolTip": "OnlineLibrary.Repository\\Repositories\\UnitOfWork.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAAsAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-19T19:28:53.565Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "GetAllBookDetailsDto.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\Dtos\\GetAllBookDetailsDto.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\Dtos\\GetAllBookDetailsDto.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\Dtos\\GetAllBookDetailsDto.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\Dtos\\GetAllBookDetailsDto.cs",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAAA8AAAAIAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T22:16:30.531Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "IAdminService.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\AdminService\\IAdminService.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\AdminService\\IAdminService.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\AdminService\\IAdminService.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\AdminService\\IAdminService.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T23:47:21.886Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "AdminService.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\AdminService\\AdminService.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\AdminService\\AdminService.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\AdminService\\AdminService.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\AdminService\\AdminService.cs",
+              "ViewState": "AQIAACAAAAAAAAAAAAAgwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T23:47:07.854Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "RejectChangeDto.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\AdminService\\Dtos\\RejectChangeDto.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\AdminService\\Dtos\\RejectChangeDto.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\AdminService\\Dtos\\RejectChangeDto.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\AdminService\\Dtos\\RejectChangeDto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T23:47:00.893Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "OnlineLibrary.Repository",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\Source\\Repos\\Back-End-GP\\OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj",
+              "RelativeDocumentMoniker": "OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj",
+              "ToolTip": "C:\\Users\\SHimaa\\Source\\Repos\\Back-End-GP\\OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj",
+              "RelativeToolTip": "OnlineLibrary.Repository\\OnlineLibrary.Repository.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-03-18T22:43:54.655Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "AccountController.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Web\\Controllers\\AccountController.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\Controllers\\AccountController.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Web\\Controllers\\AccountController.cs",
+              "RelativeToolTip": "OnlineLibrary.Web\\Controllers\\AccountController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAcAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T22:36:45.287Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "BookDetailsDto.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\Dtos\\BookDetailsDto.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\Dtos\\BookDetailsDto.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\Dtos\\BookDetailsDto.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\Dtos\\BookDetailsDto.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAA4AAAAsAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T22:16:58.551Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AddBookDetailsDto.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\Dtos\\AddBookDetailsDto.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Service\\BookService\\Dtos\\AddBookDetailsDto.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Service\\BookService\\Dtos\\AddBookDetailsDto.cs",
+              "RelativeToolTip": "OnlineLibrary.Service\\BookService\\Dtos\\AddBookDetailsDto.cs",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAABEAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T22:15:45.145Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "ApplySeeding.cs",
+              "DocumentMoniker": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Web\\Helper\\ApplySeeding.cs",
+              "RelativeDocumentMoniker": "OnlineLibrary.Web\\Helper\\ApplySeeding.cs",
+              "ToolTip": "C:\\Users\\SHimaa\\source\\repos\\Back-End-GP\\OnlineLibrary.Web\\Helper\\ApplySeeding.cs",
+              "RelativeToolTip": "OnlineLibrary.Web\\Helper\\ApplySeeding.cs",
+              "ViewState": "AQIAAAsAAAAAAAAAAAAAwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T22:12:46.103Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\bin\Debug\net8.0\OnlineLibrary.Data.deps.json
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\bin\Debug\net8.0\OnlineLibrary.Data.runtimeconfig.json
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\bin\Debug\net8.0\OnlineLibrary.Data.dll
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\bin\Debug\net8.0\OnlineLibrary.Data.pdb
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.csproj.AssemblyReference.cache
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.AssemblyInfoInputs.cache
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.AssemblyInfo.cs
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.csproj.CoreCompileInputs.cache
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.sourcelink.json
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.dll
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\refint\OnlineLibrary.Data.dll
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.pdb
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\OnlineLibrary.Data.genruntimeconfig.cache
+C:\Users\SHimaa\Source\Repos\Back-End-GP\OnlineLibrary.data\obj\Debug\net8.0\ref\OnlineLibrary.Data.dll
