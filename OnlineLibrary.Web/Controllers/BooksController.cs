@@ -68,5 +68,11 @@ namespace OnlineLibrary.Web.Controllers
             await _bookService.DeleteBookAsync(id);
             return Ok();
         }
+        [HttpGet]
+        public async Task<ActionResult<PaginatedBookDto>> GetBooksPaginated([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 20)
+        {
+            var result = await _bookService.GetAllBooksAsyncUsingPaginated(pageIndex, pageSize);
+            return Ok(result);
+        }
     }
 }
