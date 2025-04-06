@@ -14,7 +14,8 @@ namespace OnlineLibrary.Service.BookService.Dtos
         {
             CreateMap<BooksDatum, AddBookDetailsDto>().ReverseMap();
             CreateMap<BooksDatum, BookDetailsDto>().ReverseMap();
-
+            CreateMap<BooksDatum, GetAllBookDetailsDto>().ReverseMap();
+            CreateMap<BooksDatum, PaginatedBookDto>().ReverseMap();
 
         }
     }
