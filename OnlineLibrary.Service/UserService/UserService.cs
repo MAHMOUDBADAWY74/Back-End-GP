@@ -57,7 +57,7 @@ namespace OnlineLibrary.Service.UserService
             return new UserDto
             {
                 Id = Guid.Parse(user.Id),
-                FirstName = user.firstName,
+                UserName = user.UserName, 
                 Email = user.Email!,
                 Token = _tokenService.GenerateToken(user),
             };
