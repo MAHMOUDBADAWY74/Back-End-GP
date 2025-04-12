@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using OnlineLibrary.Data.Contexts;
@@ -58,6 +58,19 @@ namespace OnlineLibrary.Web
                 app.UseSwaggerUI();
             }
 
+            try
+            {
+                var testFilePath = Path.Combine("wwwroot/images", "test.txt");
+                await File.WriteAllTextAsync(testFilePath, "Test write access");
+                Console.WriteLine("Write access to wwwroot/images is working.");
+                File.Delete(testFilePath); // حذف الملف بعد الاختبار
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Write access to wwwroot/images failed: {ex.Message}");
+            }
+
+
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
@@ -66,6 +79,8 @@ namespace OnlineLibrary.Web
             app.UseCors("AllowAll");
 
             app.MapControllers();
+
+            app.UseStaticFiles();
 
             app.Run();
         }

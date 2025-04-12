@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace OnlineLibrary.Data.Entities;
 
-public partial class BooksDatum : BaseEntity
+public partial class BooksDatum: BaseEntity
 {
     public long? Id { get; set; }
 
@@ -16,4 +16,6 @@ public partial class BooksDatum : BaseEntity
     public string? Summary { get; set; }
 
     public string? Text { get; set; }
+
+    public string? Cover { get; set; }
 }
