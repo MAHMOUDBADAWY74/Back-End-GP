@@ -47,20 +47,28 @@ namespace OnlineLibrary.Web.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult> AddBook(AddBookDetailsDto addBookDetailsDto)
+        public async Task<ActionResult> AddBook([FromForm] AddBookDetailsDto addBookDetailsDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // إرجاع الأخطاء إذا كانت البيانات غير صالحة
+            }
+
             await _bookService.AddBookAsync(addBookDetailsDto);
-            return Ok();
+            return Ok("Book added successfully.");
         }
+
+
 
 
 
         [HttpPut]
-        public async Task<ActionResult> UpdateBook(BookDetailsDto BookDetailsDto)
+        public async Task<ActionResult> UpdateBook([FromForm] BookDetailsDto bookDetailsDto)
         {
-            await _bookService.UpdateBookAsync( BookDetailsDto);
-            return Ok();
+            await _bookService.UpdateBookAsync(bookDetailsDto);
+            return Ok("Book updated successfully.");
         }
+
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteBook(long id)
@@ -68,6 +76,14 @@ namespace OnlineLibrary.Web.Controllers
             await _bookService.DeleteBookAsync(id);
             return Ok();
         }
+
+        [HttpDelete("{id}/cover")]
+        public async Task<IActionResult> RemoveBookCover(long id)
+        {
+            await _bookService.RemoveBookCoverAsync(id);
+            return Ok("Cover removed successfully.");
+        }
+
         [HttpGet]
         public async Task<ActionResult<PaginatedBookDto>> GetBooksPaginated([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 20)
         {

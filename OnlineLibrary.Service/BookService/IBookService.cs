@@ -16,5 +16,7 @@ namespace OnlineLibrary.Service.BookService
         Task UpdateBookAsync(BookDetailsDto BookDetailsDto);
         Task DeleteBookAsync(long id);
         Task<PaginatedBookDto> GetAllBooksAsyncUsingPaginated(int pageIndex, int pageSize);
-    }
+        Task RemoveBookCoverAsync(long id);
+
+    }   
 }
