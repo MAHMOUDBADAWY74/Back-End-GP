@@ -15,8 +15,15 @@ namespace OnlineLibrary.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            // Removed duplicate declaration of 'builder'
+            var webAppOptions = new WebApplicationOptions
+            {
+                WebRootPath = "wwwroot"
+            };
 
+            builder = WebApplication.CreateBuilder(webAppOptions);
+
+            builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerDocumentation();
 
@@ -60,7 +67,15 @@ namespace OnlineLibrary.Web
 
             try
             {
-                var testFilePath = Path.Combine("wwwroot/images", "test.txt");
+                // Ensure the wwwroot/images directory exists
+                var imagesPath = Path.Combine(app.Environment.WebRootPath, "images");
+                if (!Directory.Exists(imagesPath))
+                {
+                    Directory.CreateDirectory(imagesPath);
+                    Console.WriteLine("Created wwwroot/images directory.");
+                }
+
+                var testFilePath = Path.Combine(imagesPath, "test.txt");
                 await File.WriteAllTextAsync(testFilePath, "Test write access");
                 Console.WriteLine("Write access to wwwroot/images is working.");
                 File.Delete(testFilePath); // حذف الملف بعد الاختبار
@@ -69,7 +84,6 @@ namespace OnlineLibrary.Web
             {
                 Console.WriteLine($"Write access to wwwroot/images failed: {ex.Message}");
             }
-
 
             app.UseHttpsRedirection();
             app.UseAuthentication();
