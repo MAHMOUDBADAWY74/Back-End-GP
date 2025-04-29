@@ -9,11 +9,10 @@ using System.Security.Claims;
 
 namespace OnlineLibrary.Web.Controllers
 {
-   
+    [Route("api/[controller]")]
     [ApiController]
     public class CommunityController : BaseController
     {
-
         private readonly ICommunityService _communityService;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -42,8 +41,8 @@ namespace OnlineLibrary.Web.Controllers
                 return NotFound();
 
             return Ok(community);
-
         }
+
         [HttpPost]
         public async Task<ActionResult<CommunityDto>> CreateCommunity(CreateCommunityDto dto)
         {
@@ -51,7 +50,8 @@ namespace OnlineLibrary.Web.Controllers
             var community = await _communityService.CreateCommunityAsync(dto, userId);
             return Ok(community);
         }
-        [HttpPost("{communityId}")]
+
+        [HttpPost("{communityId}/join")]
         public async Task<IActionResult> JoinCommunity(long communityId)
         {
             var userId = GetUserId();
@@ -59,15 +59,16 @@ namespace OnlineLibrary.Web.Controllers
             return Ok();
         }
 
-        [HttpPost("{communityId}")]
+        [HttpPost("{communityId}/leave")]
         public async Task<IActionResult> LeaveCommunity(long communityId)
         {
             var userId = GetUserId();
             await _communityService.LeaveCommunityAsync(communityId, userId);
             return Ok();
         }
-    
-        [HttpPost]
+
+        [HttpPost("posts")]
+        [Authorize(Roles = "Sender,Admin,Moderator")]
         public async Task<ActionResult<CommunityPostDto>> CreatePost(CreatePostDto dto)
         {
             var userId = GetUserId();
@@ -75,16 +76,16 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(post);
         }
 
-        [HttpGet("{communityId}")]
-        [AllowAnonymous]
+        [HttpGet("{communityId}/posts")]
+        [Authorize(Roles = "Receiver,Admin,Moderator")]
         public async Task<ActionResult<IEnumerable<CommunityPostDto>>> GetCommunityPosts(long communityId)
         {
-            var userId = GetUserId(); 
+            var userId = GetUserId();
             var posts = await _communityService.GetCommunityPostsAsync(communityId, userId);
             return Ok(posts);
         }
 
-        [HttpPost("{postId}")]
+        [HttpPost("posts/{postId}/like")]
         public async Task<IActionResult> LikePost(long postId)
         {
             var userId = GetUserId();
@@ -92,7 +93,7 @@ namespace OnlineLibrary.Web.Controllers
             return Ok();
         }
 
-        [HttpPost("{postId}")]
+        [HttpPost("posts/{postId}/unlike")]
         public async Task<IActionResult> UnlikePost(long postId)
         {
             var userId = GetUserId();
@@ -100,7 +101,7 @@ namespace OnlineLibrary.Web.Controllers
             return Ok();
         }
 
-        [HttpPost]
+        [HttpPost("posts/comments")]
         public async Task<ActionResult<PostCommentDto>> AddComment(CreateCommentDto dto)
         {
             var userId = GetUserId();
@@ -108,7 +109,7 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(comment);
         }
 
-        [HttpGet("{postId}")]
+        [HttpGet("posts/{postId}/comments")]
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<PostCommentDto>>> GetPostComments(long postId)
         {
@@ -124,8 +125,8 @@ namespace OnlineLibrary.Web.Controllers
             return Ok();
         }
 
-        [HttpPost]
-        [Authorize(Roles = "Admin")] 
+        [HttpPost("moderators/assign")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AssignModerator(AssignModeratorDto dto)
         {
             var adminId = GetUserId();
@@ -133,8 +134,8 @@ namespace OnlineLibrary.Web.Controllers
             return Ok();
         }
 
-        [HttpPost]
-        [Authorize(Roles = "Admin")] 
+        [HttpPost("moderators/remove")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveModerator([FromQuery] long communityId, [FromQuery] string userId)
         {
             var adminId = GetUserId();
@@ -159,7 +160,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("{communityId}/ban/{userId}")]
-        [Authorize(Roles = "Admin,Moderator")] 
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> BanUser(long communityId, string userId)
         {
             var requesterId = GetUserId();
@@ -168,15 +169,12 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("{communityId}/unban/{userId}")]
-        [Authorize(Roles = "Admin,Moderator")] 
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> UnbanUser(long communityId, string userId)
         {
             var requesterId = GetUserId();
             var result = await _communityService.UnbanUserAsync(communityId, requesterId, userId);
             return Ok(new { Unbanned = result });
         }
-
-
     }
 }
-

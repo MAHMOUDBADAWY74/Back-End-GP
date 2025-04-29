@@ -38,7 +38,6 @@ namespace OnlineLibrary.Service.UserService
                 throw new Exception("Email not found.");
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            // الجديد
             Console.WriteLine($"Password Reset Token: {token}");
             return true;
         }
@@ -57,9 +56,10 @@ namespace OnlineLibrary.Service.UserService
             return new UserDto
             {
                 Id = Guid.Parse(user.Id),
-                UserName = user.UserName, 
+                FirstName = user.firstName,
+                UserName = user.UserName,
                 Email = user.Email!,
-                Token = _tokenService.GenerateToken(user),
+                Token = await _tokenService.GenerateJwtToken(user)
             };
         }
 
@@ -73,8 +73,7 @@ namespace OnlineLibrary.Service.UserService
             {
                 firstName = input.FirstName,
                 Email = input.Email,
-                UserName = $"{input.FirstName}{input.LastName}",
-
+                UserName = $"{input.FirstName}{input.LastName}"
             };
 
             var result = await _userManager.CreateAsync(appUser, input.Password);
@@ -85,7 +84,7 @@ namespace OnlineLibrary.Service.UserService
                 Id = Guid.Parse(appUser.Id),
                 FirstName = appUser.firstName,
                 Email = appUser.Email!,
-                Token = _tokenService.GenerateToken(appUser),
+                Token = await _tokenService.GenerateJwtToken(appUser)
             };
         }
 
@@ -102,7 +101,6 @@ namespace OnlineLibrary.Service.UserService
             return true;
         }
 
-
         public async Task<bool> VerifyEmail(VerifyEmailDto input)
         {
             var user = await _userManager.FindByIdAsync(input.Id.ToString());
@@ -118,7 +116,7 @@ namespace OnlineLibrary.Service.UserService
 
         public async Task<bool> Logout()
         {
-            await _signInManager.SignOutAsync(); 
+            await _signInManager.SignOutAsync();
             return true;
         }
 
@@ -168,7 +166,6 @@ namespace OnlineLibrary.Service.UserService
             return true;
         }
 
-
         private string GetPropertyValue(ApplicationUser user, string propertyName)
         {
             var property = user.GetType().GetProperty(propertyName);
@@ -179,4 +176,3 @@ namespace OnlineLibrary.Service.UserService
         }
     }
 }
-
