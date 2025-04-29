@@ -15,6 +15,8 @@ namespace OnlineLibrary.Web.Extensions
             builder = new IdentityBuilder(builder.UserType, builder.Services);
             builder.AddEntityFrameworkStores<OnlineLibraryIdentityDbContext>();
             builder.AddSignInManager<SignInManager<ApplicationUser>>();
+        
+            
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                  .AddJwtBearer(option =>
                  {

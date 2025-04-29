@@ -5,9 +5,15 @@ using OnlineLibrary.Repository.Repositories;
 using OnlineLibrary.Service.AdminService;
 using OnlineLibrary.Service.BookService;
 using OnlineLibrary.Service.BookService.Dtos;
+using OnlineLibrary.Service.CommunityService;
+using OnlineLibrary.Service.CommunityService.Dtos;
 using OnlineLibrary.Service.HandleResponse;
 using OnlineLibrary.Service.TokenService;
 using OnlineLibrary.Service.UserService;
+using OnlineLibrary.Service.ExchangeRequestService.DTOS;
+using OnlineLibrary.Service.ExchangeRequestService;
+
+using System.ComponentModel;
 
 namespace OnlineLibrary.Web.Extensions
 {
@@ -15,16 +21,24 @@ namespace OnlineLibrary.Web.Extensions
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            // إضافة الخدمات
+            
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddAutoMapper(typeof(BookProfile));
-            services.AddScoped<IBookService, BookService>();
+            services.AddAutoMapper(typeof(CommunityProfile));
+            services.AddAutoMapper(typeof(ExchangeBooksProfile));
+
+          services.AddScoped<IBookService, BookService>();
 
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<ICommunityService, CommunityService>();
+            services.AddScoped<IExchangeBooks, ExchangeBooks>();
+           
 
-            // تخصيص إعدادات معالجة الأخطاء في API
+
+
+
             services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = actionContext =>
