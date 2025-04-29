@@ -21,6 +21,12 @@ namespace OnlineLibrary.Data.Contexts
         public DbSet<FavoriteBook> FavoriteBook { get; set; }
         public DbSet<Wishlist> Wishlists { get; set; }
         public DbSet<Readlist> Readlists { get; set; }
+        public DbSet<Community> Communities { get; set; }
+        public DbSet<CommunityMember> CommunityMembers { get; set; }
+        public DbSet<CommunityPost> CommunityPosts { get; set; }
+        public DbSet<PostLike> PostLikes { get; set; }
+        public DbSet<PostComment> PostComments { get; set; }
+        public DbSet<ExchangeBookRequestx> exchangeBooksRequests { get; set; }
 
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)

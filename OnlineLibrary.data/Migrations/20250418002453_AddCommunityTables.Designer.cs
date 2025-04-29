@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineLibrary.Data.Contexts;
 
@@ -11,9 +12,11 @@ using OnlineLibrary.Data.Contexts;
 namespace OnlineLibrary.Data.Migrations
 {
     [DbContext(typeof(OnlineLibraryIdentityDbContext))]
-    partial class OnlineLibraryIdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250418002453_AddCommunityTables")]
+    partial class AddCommunityTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -400,56 +403,6 @@ namespace OnlineLibrary.Data.Migrations
                     b.ToTable("CommunityPosts");
                 });
 
-            modelBuilder.Entity("OnlineLibrary.Data.Entities.ExchangeBookRequestx", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("AuthorName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BookTitle")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool?>("IsAccepted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReceiverId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ReceiverUserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SenderId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("SenderUserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("latitude")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("longitude")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("exchangeBooksRequests");
-                });
-
             modelBuilder.Entity("OnlineLibrary.Data.Entities.FavoriteBook", b =>
                 {
                     b.Property<long?>("Id")
@@ -821,21 +774,6 @@ namespace OnlineLibrary.Data.Migrations
                     b.Navigation("Community");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OnlineLibrary.Data.Entities.ExchangeBookRequestx", b =>
-                {
-                    b.HasOne("OnlineLibrary.Data.Entities.ApplicationUser", "Receiver")
-                        .WithMany()
-                        .HasForeignKey("ReceiverId");
-
-                    b.HasOne("OnlineLibrary.Data.Entities.ApplicationUser", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId");
-
-                    b.Navigation("Receiver");
-
-                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.FavoriteBook", b =>
