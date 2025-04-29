@@ -8,37 +8,28 @@ namespace OnlineLibrary.Web.Helper
 {
     public class ApplySeeding
     {
-
         public static async Task ApplySeedingAsync(WebApplication app)
         {
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var loggerfactory = services.GetRequiredService<ILoggerFactory>();
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
                 try
                 {
                     var context = services.GetRequiredService<OnlineLibraryIdentityDbContext>();
                     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>(); 
 
                     await context.Database.MigrateAsync();
-                    await OnlineLibraryContextSeed.SeedUserAsync(userManager);
+                    await OnlineLibraryContextSeed.SeedUserAsync(userManager, roleManager); 
                 }
-
                 catch (Exception ex)
                 {
-                    
-                    var logger = loggerfactory.CreateLogger<ApplySeeding>();
-                    logger.LogError(ex.Message);
-
-
+                    var logger = loggerFactory.CreateLogger<ApplySeeding>();
+                    logger.LogError(ex, "An error occurred while seeding the database.");
                 }
-                
-
             }
         }
-
     }
 }
-
-
