@@ -69,7 +69,7 @@ namespace OnlineLibrary.Web.Controllers
 
         [HttpPost("posts")]
         [Authorize(Roles = "Sender,Admin,Moderator")]
-        public async Task<ActionResult<CommunityPostDto>> CreatePost(CreatePostDto dto)
+        public async Task<ActionResult<CommunityPostDto>> CreatePost([FromForm] CreatePostDto dto)
         {
             var userId = GetUserId();
             var post = await _communityService.CreatePostAsync(dto, userId);
