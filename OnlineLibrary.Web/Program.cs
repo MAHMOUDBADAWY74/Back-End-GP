@@ -13,16 +13,12 @@ namespace OnlineLibrary.Web
     {
         public static async Task Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Removed duplicate declaration of 'builder'
-            var webAppOptions = new WebApplicationOptions
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
                 WebRootPath = "wwwroot"
-            };
+            });
 
-            builder = WebApplication.CreateBuilder(webAppOptions);
-
+            // إضافة الخدمات
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerDocumentation();
@@ -39,10 +35,10 @@ namespace OnlineLibrary.Web
             builder.Services.AddApplicationServices();
             builder.Services.AddIdentityServices(builder.Configuration);
 
-            // Register the DbContextFactory
+            // تسجيل DbContextFactory
             builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
 
-            // Add CORS policy
+            // إضافة CORS
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", builder =>
@@ -55,19 +51,20 @@ namespace OnlineLibrary.Web
 
             var app = builder.Build();
 
-            // Apply seeding
+            // تطبيق الـ Seeding
             await ApplySeeding.ApplySeedingAsync(app);
 
-            // Configure middleware pipeline
+            // إعداد الـ Middleware
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
+            // التأكد من وجود فولدرات الصور
             try
             {
-                // Ensure the wwwroot/images directory exists
+                // فولدر images
                 var imagesPath = Path.Combine(app.Environment.WebRootPath, "images");
                 if (!Directory.Exists(imagesPath))
                 {
@@ -75,31 +72,33 @@ namespace OnlineLibrary.Web
                     Console.WriteLine("Created wwwroot/images directory.");
                 }
 
+                // اختبار الكتابة في images
                 var testFilePath = Path.Combine(imagesPath, "test.txt");
                 await File.WriteAllTextAsync(testFilePath, "Test write access");
                 Console.WriteLine("Write access to wwwroot/images is working.");
-                File.Delete(testFilePath); // حذف الملف بعد الاختبار
+                File.Delete(testFilePath);
+
+                // فولدر post-images
+                var postImagesPath = Path.Combine(app.Environment.WebRootPath, "post-images");
+                if (!Directory.Exists(postImagesPath))
+                {
+                    Directory.CreateDirectory(postImagesPath);
+                    Console.WriteLine("Created wwwroot/post-images directory.");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Write access to wwwroot/images failed: {ex.Message}");
+                Console.WriteLine($"Failed to set up image directories: {ex.Message}");
             }
 
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
-
-            // Use CORS policy
             app.UseCors("AllowAll");
-
+            app.UseStaticFiles(); // لخدمة الملفات الثابتة مثل الصور
             app.MapControllers();
-
-            app.UseStaticFiles();
 
             app.Run();
         }
     }
 }
-
-
-

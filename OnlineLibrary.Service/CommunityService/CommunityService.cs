@@ -209,22 +209,44 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("User not found.");
             }
 
-            
             var isMember = (await _unitOfWork.Repository<CommunityMember>().GetAllAsync())
                 .Any(m => m.CommunityId == dto.CommunityId && m.UserId == userId);
 
             if (!isMember)
             {
-                throw new Exception("Only community members can create posts."); // after join 
+                throw new Exception("Only community members can create posts.");
             }
 
             var post = new CommunityPost
             {
                 Content = dto.Content,
-                
                 UserId = userId,
                 CommunityId = dto.CommunityId
             };
+
+            // التعامل مع رفع الصورة
+            if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+            {
+                // التأكد من إن الفولدر موجود
+                var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "post-images");
+                if (!Directory.Exists(imagesFolder))
+                {
+                    Directory.CreateDirectory(imagesFolder);
+                }
+
+                // إنشاء اسم فريد للصورة
+                var uniqueFileName = $"{Guid.NewGuid()}_{dto.ImageFile.FileName}";
+                var filePath = Path.Combine(imagesFolder, uniqueFileName);
+
+                // حفظ الصورة
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.ImageFile.CopyToAsync(stream);
+                }
+
+                // حفظ المسار النسبي في الـ ImageUrl
+                post.ImageUrl = $"/post-images/{uniqueFileName}";
+            }
 
             await _unitOfWork.Repository<CommunityPost>().AddAsync(post);
             await _unitOfWork.CountAsync();
