@@ -44,6 +44,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")] // إضافة الأوثورايزيشن للـ Admin
         public async Task<ActionResult<CommunityDto>> CreateCommunity(CreateCommunityDto dto)
         {
             var userId = GetUserId();

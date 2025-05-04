@@ -1,11 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
-using OnlineLibrary.Web.Extensions;
 using OnlineLibrary.Web.Helper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using OnlineLibrary.Service.TokenService;
+using Microsoft.EntityFrameworkCore.Design;
 using Store.Web.Extentions;
+using OnlineLibrary.Web.Extensions; // أضفنا الـ namespace لـ AddApplicationServices
 
 namespace OnlineLibrary.Web
 {
@@ -21,7 +26,7 @@ namespace OnlineLibrary.Web
             // إضافة الخدمات
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerDocumentation();
+            builder.Services.AddSwaggerDocumentation(); // من Store.Web.Extentions
 
             builder.Services.AddDbContext<OnlineLibraryIdentityDbContext>(options =>
             {
@@ -32,8 +37,31 @@ namespace OnlineLibrary.Web
                 .AddEntityFrameworkStores<OnlineLibraryIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
-            builder.Services.AddApplicationServices();
-            builder.Services.AddIdentityServices(builder.Configuration);
+            // Configure JWT Authentication
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                };
+            });
+
+            // تسجيل الخدمات
+            builder.Services.AddApplicationServices(); // دلوقتي هيشتغل مع OnlineLibrary.Web.Extensions
+            // أزلنا AddIdentityServices لأنها مش موجودة
+
+            // تسجيل TokenService (للتأكد)
+            builder.Services.AddScoped<ITokenService, TokenService>();
 
             // تسجيل DbContextFactory
             builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
@@ -50,6 +78,43 @@ namespace OnlineLibrary.Web
             });
 
             var app = builder.Build();
+
+            // Seed Admin User and Role
+            using (var scope = app.Services.CreateScope())
+            {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                // Ensure Admin role exists
+                if (!await roleManager.RoleExistsAsync("Admin"))
+                {
+                    await roleManager.CreateAsync(new IdentityRole("Admin"));
+                }
+
+                // Ensure Admin user exists
+                var adminUser = await userManager.FindByEmailAsync("admin@gmail.com");
+                if (adminUser == null)
+                {
+                    adminUser = new ApplicationUser
+                    {
+                        Id = "f7420afa-2aeb-4026-9271-cf2549b215cd",
+                        UserName = "Admin",
+                        Email = "admin@gmail.com",
+                        EmailConfirmed = true
+                    };
+                    var result = await userManager.CreateAsync(adminUser, "Admin@123");
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception("Failed to create admin user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                    }
+                }
+
+                // Ensure Admin user has Admin role
+                if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                }
+            }
 
             // تطبيق الـ Seeding
             await ApplySeeding.ApplySeedingAsync(app);
@@ -98,7 +163,7 @@ namespace OnlineLibrary.Web
             app.UseStaticFiles(); // لخدمة الملفات الثابتة مثل الصور
             app.MapControllers();
 
-            app.Run();
+            await app.RunAsync();
         }
     }
 }
