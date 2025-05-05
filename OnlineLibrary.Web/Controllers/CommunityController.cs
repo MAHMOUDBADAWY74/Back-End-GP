@@ -6,6 +6,7 @@ using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Service.CommunityService;
 using OnlineLibrary.Service.CommunityService.Dtos;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -27,24 +28,32 @@ namespace OnlineLibrary.Web.Controllers
         private string GetUserId() => _userManager.GetUserId(User);
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<CommunityDto>>> GetAllCommunities()
         {
-            var communities = await _communityService.GetAllCommunitiesAsync();
+            var userId = GetUserId();
+            var isAdmin = User.IsInRole("Admin");
+            var communities = await _communityService.GetAllCommunitiesAsync(userId, isAdmin);
             return Ok(communities);
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<CommunityDto>> GetCommunity(long id)
         {
             var community = await _communityService.GetCommunityByIdAsync(id);
             if (community == null)
                 return NotFound();
 
+            var userId = GetUserId();
+            var communityMembers = await _communityService.GetCommunityMembersAsync(id); // New method needed
+            community.IsMember = communityMembers.Any(m => m.UserId == userId);
+
             return Ok(community);
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")] // إضافة الأوثورايزيشن للـ Admin
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<CommunityDto>> CreateCommunity(CreateCommunityDto dto)
         {
             var userId = GetUserId();
@@ -53,6 +62,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("{communityId}/join")]
+        [Authorize]
         public async Task<IActionResult> JoinCommunity(long communityId)
         {
             var userId = GetUserId();
@@ -61,6 +71,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("{communityId}/leave")]
+        [Authorize]
         public async Task<IActionResult> LeaveCommunity(long communityId)
         {
             var userId = GetUserId();
@@ -87,6 +98,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("posts/{postId}/like")]
+        [Authorize]
         public async Task<IActionResult> LikePost(long postId)
         {
             var userId = GetUserId();
@@ -95,6 +107,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("posts/{postId}/unlike")]
+        [Authorize]
         public async Task<IActionResult> UnlikePost(long postId)
         {
             var userId = GetUserId();
@@ -103,6 +116,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("posts/comments")]
+        [Authorize]
         public async Task<ActionResult<PostCommentDto>> AddComment(CreateCommentDto dto)
         {
             var userId = GetUserId();
@@ -119,6 +133,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("posts/{postId}/share")]
+        [Authorize]
         public async Task<IActionResult> SharePost(long postId, [FromQuery] long? communityId)
         {
             var userId = GetUserId();
@@ -145,6 +160,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpDelete("posts/{postId}")]
+        [Authorize]
         public async Task<IActionResult> DeletePost(long postId)
         {
             var requesterId = GetUserId();
@@ -153,6 +169,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpDelete("comments/{commentId}")]
+        [Authorize]
         public async Task<IActionResult> DeleteComment(long commentId)
         {
             var requesterId = GetUserId();

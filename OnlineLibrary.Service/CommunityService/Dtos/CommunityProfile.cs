@@ -13,13 +13,14 @@ namespace OnlineLibrary.Service.CommunityService.Dtos
         public CommunityProfile()
         {
             CreateMap<Community, CommunityDto>()
-                .ForMember(dest => dest.AdminName, opt => opt.MapFrom(src => src.Admin != null ? $"{src.Admin.firstName} {src.Admin.LastName}" : "Unknown"))
-                .ForMember(dest => dest.MemberCount, opt => opt.MapFrom(src => src.Members != null ? src.Members.Count : 0))
-                .ForMember(dest => dest.PostCount, opt => opt.MapFrom(src => src.Posts != null ? src.Posts.Count : 0));
+                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                 .ForMember(dest => dest.AdminName, opt => opt.MapFrom(src => src.Admin != null ? $"{src.Admin.firstName} {src.Admin.LastName}" : "Unknown"))
+                 .ForMember(dest => dest.MemberCount, opt => opt.Ignore())
+                 .ForMember(dest => dest.IsMember, opt => opt.Ignore())
+                 .ForMember(dest => dest.PostCount, opt => opt.MapFrom(src => src.Posts != null ? src.Posts.Count : 0));
 
             CreateMap<CommunityMember, CommunityMemberDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.firstName} {src.User.LastName}" : "Unknown"));
-              
 
             CreateMap<CommunityPost, CommunityPostDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.firstName} {src.User.LastName}" : "Unknown"))
@@ -34,6 +35,10 @@ namespace OnlineLibrary.Service.CommunityService.Dtos
             CreateMap<PostShare, PostShareDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.firstName} {src.User.LastName}" : "Unknown"))
                 .ForMember(dest => dest.SharedWithCommunityName, opt => opt.MapFrom(src => src.SharedWithCommunity != null ? src.SharedWithCommunity.Name : "Unknown"));
+
+            CreateMap<CreateCommunityDto, Community>();
+            CreateMap<CreatePostDto, CommunityPost>();
+            CreateMap<CreateCommentDto, PostComment>();
         }
     }
 }
