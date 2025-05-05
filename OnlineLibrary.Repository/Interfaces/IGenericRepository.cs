@@ -4,6 +4,7 @@ using OnlineLibrary.Repository.Specification;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,5 +24,6 @@ namespace OnlineLibrary.Repository.Interfaces
 
         Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec);
         Task<int> CountWithSpecAsync(ISpecification<T> spec);
+        Task<IReadOnlyList<TResult>> GetDistinctAsync<TResult>(Expression<Func<T, TResult>> selector);
     }
 }
