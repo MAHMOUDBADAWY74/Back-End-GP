@@ -12,6 +12,7 @@ namespace OnlineLibrary.Service.BookService.Dtos
     {
         public BookProfile()
         {
+            CreateMap<string, CategoryDto>().ForMember(dest => dest.Name, opt => opt.MapFrom(src => src));
             CreateMap<BooksDatum, AddBookDetailsDto>().ReverseMap();
             CreateMap<BooksDatum, BookDetailsDto>().ReverseMap();
             CreateMap<BooksDatum, GetAllBookDetailsDto>().ReverseMap();
