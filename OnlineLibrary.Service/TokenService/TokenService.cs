@@ -44,11 +44,12 @@ namespace OnlineLibrary.Service.TokenService
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var expireDays = int.Parse(_configuration["Jwt:ExpireDays"]);
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(1),
+                expires: DateTime.Now.AddDays(expireDays),
                 signingCredentials: creds);
 
             return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));

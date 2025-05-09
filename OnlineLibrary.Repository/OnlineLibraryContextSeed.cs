@@ -3,7 +3,6 @@ using OnlineLibrary.Data.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OnlineLibrary.Repository
@@ -12,16 +11,25 @@ namespace OnlineLibrary.Repository
     {
         public static async Task SeedUserAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
+            // Seed Roles
             string[] roles = new[] { "Admin", "User", "Receiver", "Sender", "Moderator" };
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
-                    await roleManager.CreateAsync(new IdentityRole(role));
-                    Console.WriteLine($"Role {role} created.");
+                    var result = await roleManager.CreateAsync(new IdentityRole(role));
+                    if (result.Succeeded)
+                    {
+                        Console.WriteLine($"Role {role} created.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to create role {role}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    }
                 }
             }
 
+            // Seed Users
             var users = new List<(string Email, string UserName, string FirstName, string LastName, string Role, string Password)>
             {
                 ("admin@gmail.com", "Admin", "Admin", "User", "Admin", "Admin123!"),
@@ -51,14 +59,22 @@ namespace OnlineLibrary.Repository
                             State = "Cairo",
                             Street = "Unknown",
                             PostalCode = "12345"
-                        }
+                        },
+                        EmailConfirmed = true // To avoid email confirmation for seeded users
                     };
 
                     var result = await userManager.CreateAsync(user, userData.Password);
                     if (result.Succeeded)
                     {
-                        await userManager.AddToRoleAsync(user, userData.Role);
-                        Console.WriteLine($"User {userData.Email} created and assigned to {userData.Role} role.");
+                        var roleResult = await userManager.AddToRoleAsync(user, userData.Role);
+                        if (roleResult.Succeeded)
+                        {
+                            Console.WriteLine($"User {userData.Email} created and assigned to {userData.Role} role.");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Failed to assign role {userData.Role} to user {userData.Email}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                        }
                     }
                     else
                     {
@@ -67,6 +83,20 @@ namespace OnlineLibrary.Repository
                 }
                 else
                 {
+                    // Check if the existing user has the correct role
+                    var userRoles = await userManager.GetRolesAsync(existingUser);
+                    if (!userRoles.Contains(userData.Role))
+                    {
+                        var roleResult = await userManager.AddToRoleAsync(existingUser, userData.Role);
+                        if (roleResult.Succeeded)
+                        {
+                            Console.WriteLine($"Assigned role {userData.Role} to existing user {userData.Email}.");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Failed to assign role {userData.Role} to existing user {userData.Email}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                        }
+                    }
                     Console.WriteLine($"User {userData.Email} already exists.");
                 }
             }

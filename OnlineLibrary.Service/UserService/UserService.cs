@@ -5,9 +5,7 @@ using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Service.TokenService;
 using OnlineLibrary.Service.UserService.Dtos;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OnlineLibrary.Service.UserService
@@ -69,6 +67,7 @@ namespace OnlineLibrary.Service.UserService
 
             if (user is not null)
                 return null;
+
             var appUser = new ApplicationUser
             {
                 firstName = input.FirstName,
@@ -77,7 +76,16 @@ namespace OnlineLibrary.Service.UserService
             };
 
             var result = await _userManager.CreateAsync(appUser, input.Password);
-            if (!result.Succeeded) throw new Exception(result.Errors.Select(x => x.Description).FirstOrDefault());
+            if (!result.Succeeded)
+                throw new Exception(result.Errors.Select(x => x.Description).FirstOrDefault());
+
+            // Add the "User" role
+            var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
+            if (!roleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(appUser);
+                throw new Exception("Failed to assign User role: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+            }
 
             return new UserDto
             {
@@ -165,6 +173,8 @@ namespace OnlineLibrary.Service.UserService
 
             return true;
         }
+
+        
 
         private string GetPropertyValue(ApplicationUser user, string propertyName)
         {
