@@ -6,8 +6,7 @@ using OnlineLibrary.Service.HandleResponse;
 
 namespace OnlineLibrary.Web.Controllers
 {
-  
-    public class AccountController :BaseController
+    public class AccountController : BaseController
     {
         private readonly IUserService _userService;
 
@@ -15,6 +14,7 @@ namespace OnlineLibrary.Web.Controllers
         {
             _userService = userService;
         }
+
         [HttpPost]
         public async Task<ActionResult<UserDto>> Login(LoginDto input)
         {
@@ -23,6 +23,7 @@ namespace OnlineLibrary.Web.Controllers
                 return BadRequest(new UserException(400, "Email Does Not Found"));
             return Ok(user);
         }
+
         [HttpPost]
         public async Task<ActionResult<UserDto>> Register(RegisterDto input)
         {
@@ -31,7 +32,6 @@ namespace OnlineLibrary.Web.Controllers
                 return BadRequest(new UserException(400, "Email Already Exists"));
             return Ok(user);
         }
-
 
         [HttpPost]
         public async Task<ActionResult> VerifyEmail(VerifyEmailDto input)
@@ -62,6 +62,7 @@ namespace OnlineLibrary.Web.Controllers
 
             return Ok(new { Message = "Done" });
         }
+
         [HttpPost]
         public async Task<ActionResult> Logout()
         {
@@ -73,8 +74,6 @@ namespace OnlineLibrary.Web.Controllers
             return Ok("Successfully logged out");
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> RequestEditUser([FromBody] RequestEditUserDto request)
         {
@@ -84,8 +83,6 @@ namespace OnlineLibrary.Web.Controllers
 
             return Ok("Edit request submitted.");
         }
-
-
 
         [HttpPost("request-delete")]
         public async Task<IActionResult> RequestDeleteUser([FromBody] RequestDeleteUserDto request)
@@ -98,6 +95,3 @@ namespace OnlineLibrary.Web.Controllers
         }
     }
 }
-
-
-

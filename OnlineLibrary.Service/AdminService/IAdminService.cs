@@ -1,4 +1,5 @@
 ﻿using OnlineLibrary.Data.Entities;
+using OnlineLibrary.Service.AdminService.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,7 @@ namespace OnlineLibrary.Service.AdminService
         Task<List<PendingUserChange>> GetPendingChanges();
         Task<bool> ApproveChange(Guid changeId);
         Task<bool> RejectChange(Guid changeId);
+        Task<bool> ChangeUserRole(string userId, ChangeRoleDto input);
+
     }
 }
