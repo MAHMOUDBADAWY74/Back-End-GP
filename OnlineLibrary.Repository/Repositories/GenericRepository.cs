@@ -60,6 +60,11 @@ namespace OnlineLibrary.Repository.Repositories
                 .Distinct()
                 .ToListAsync();
         }
+
+        public async Task<IReadOnlyList<T>> GetAllWithIncludeAsync<TProperty>(Expression<Func<T, TProperty>> include)
+        {
+            return await _context.Set<T>().Include(include).ToListAsync();
+        }
     }
 
     public static class ExpressionExtensions

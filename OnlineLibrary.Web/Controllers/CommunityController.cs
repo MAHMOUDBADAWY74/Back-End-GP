@@ -80,7 +80,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost("posts")]
-        [Authorize(Roles = "Sender,Admin,Moderator")]
+        [Authorize(Roles = "Sender,Admin,Moderator,User")]
         public async Task<ActionResult<CommunityPostDto>> CreatePost([FromForm] CreatePostDto dto)
         {
             var userId = GetUserId();
@@ -89,7 +89,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpGet("{communityId}/posts")]
-        [Authorize(Roles = "Receiver,Admin,Moderator")]
+        [Authorize(Roles = "Receiver,Admin,Moderator,User")]
         public async Task<ActionResult<IEnumerable<CommunityPostDto>>> GetCommunityPosts(long communityId)
         {
             var userId = GetUserId();
@@ -160,7 +160,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpDelete("posts/{postId}")]
-        [Authorize]
+        [Authorize(Roles = "Admin,User,Moderator")]
         public async Task<IActionResult> DeletePost(long postId)
         {
             var requesterId = GetUserId();

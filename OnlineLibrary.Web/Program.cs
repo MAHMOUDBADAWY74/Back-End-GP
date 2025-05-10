@@ -80,8 +80,15 @@ namespace OnlineLibrary.Web
             // Seed Roles and Users using OnlineLibraryContextSeed
             using (var scope = app.Services.CreateScope())
             {
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<OnlineLibraryIdentityDbContext>();
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                // Create the database if it doesn't exist
+                context.Database.EnsureCreated();
+
+                // Seed the database with roles and users
                 await OnlineLibraryContextSeed.SeedUserAsync(userManager, roleManager);
             }
 

@@ -18,8 +18,11 @@ namespace OnlineLibrary.Data.Entities
 
         public long? CommunityId { get; set; }
         public Community? Community { get; set; }
+        public int? PostCount { get; set; }
+        public int? CommentCount { get; set; } 
 
-        
+
+
         public ICollection<PostLike>? Likes { get; set; }
 
       
