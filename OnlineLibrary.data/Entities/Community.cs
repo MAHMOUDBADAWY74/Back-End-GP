@@ -12,7 +12,9 @@ namespace OnlineLibrary.Data.Entities
         public string Name { get; set; }
         public string Description { get; set; }
 
-        public string? AdminId { get; set; } 
+        public string? AdminId { get; set; }
+        public int? PostCount { get; set; } 
+
         public ApplicationUser? Admin { get; set; }
         public ICollection<CommunityMember>? Members { get; set; }
 

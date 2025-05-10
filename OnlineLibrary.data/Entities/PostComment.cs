@@ -14,7 +14,7 @@ namespace OnlineLibrary.Data.Entities
 
         public string? UserId { get; set; }
         public ApplicationUser? User { get; set; }
-
+        public string ImageUrl { get; set; } = string.Empty; // Default to empty string
         public long? PostId { get; set; }
         public CommunityPost? Post { get; set; }
     }

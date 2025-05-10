@@ -10,20 +10,16 @@ using System.Threading.Tasks;
 
 namespace OnlineLibrary.Repository.Interfaces
 {
-    public interface IGenericRepository <T> where T : BaseEntity
+    public interface IGenericRepository<T> where T : BaseEntity
     {
-
         Task<T> GetByIdAsync(long id);
-
-
         Task<IReadOnlyList<T>> GetAllAsync();
-
         Task AddAsync(T entity);
         void Update(T entity);
         void Delete(T entity);
-
         Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec);
         Task<int> CountWithSpecAsync(ISpecification<T> spec);
         Task<IReadOnlyList<TResult>> GetDistinctAsync<TResult>(Expression<Func<T, TResult>> selector);
+        Task<IReadOnlyList<T>> GetAllWithIncludeAsync<TProperty>(Expression<Func<T, TProperty>> include);
     }
 }

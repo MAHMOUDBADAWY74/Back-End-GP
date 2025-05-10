@@ -5,6 +5,7 @@ using OnlineLibrary.Repository.Interfaces;
 using OnlineLibrary.Service.CommunityService.Dtos;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -51,7 +52,8 @@ namespace OnlineLibrary.Service.CommunityService
             {
                 Name = dto.Name,
                 Description = dto.Description,
-                AdminId = adminId
+                AdminId = adminId,
+                PostCount = 0
             };
 
             await _unitOfWork.Repository<Community>().AddAsync(community);
@@ -79,6 +81,7 @@ namespace OnlineLibrary.Service.CommunityService
         {
             var communities = await _unitOfWork.Repository<Community>().GetAllAsync();
             var communityMembers = await _unitOfWork.Repository<CommunityMember>().GetAllAsync();
+            var communityPosts = await _unitOfWork.Repository<CommunityPost>().GetAllAsync();
 
             IEnumerable<Community> filteredCommunities;
             if (isAdmin || string.IsNullOrEmpty(userId))
@@ -103,6 +106,7 @@ namespace OnlineLibrary.Service.CommunityService
                 dto.IsMember = !string.IsNullOrEmpty(userId) && communityMembers.Any(m => m.CommunityId == dto.Id && m.UserId == userId);
                 var admin = await _userManager.FindByIdAsync(dto.AdminId);
                 dto.AdminName = admin != null ? $"{admin.firstName} {admin.LastName}" : "Unknown";
+                dto.PostCount = communityPosts.Count(p => p.CommunityId.HasValue && p.CommunityId.Value == dto.Id); // Calculate PostCount dynamically
             }
 
             return communityDtos;
@@ -117,8 +121,13 @@ namespace OnlineLibrary.Service.CommunityService
             }
 
             var communityMembers = await _unitOfWork.Repository<CommunityMember>().GetAllAsync();
+            var communityPosts = (await _unitOfWork.Repository<CommunityPost>().GetAllAsync())
+                .Where(p => p.CommunityId.HasValue && p.CommunityId.Value == id)
+                .ToList();
+
             var communityDto = _mapper.Map<CommunityDto>(community);
             communityDto.MemberCount = communityMembers.Count(m => m.CommunityId == id);
+            communityDto.PostCount = communityPosts.Count; // Set PostCount from actual posts
             communityDto.IsMember = false;
             var admin = await _userManager.FindByIdAsync(communityDto.AdminId);
             communityDto.AdminName = admin != null ? $"{admin.firstName} {admin.LastName}" : "Unknown";
@@ -207,7 +216,8 @@ namespace OnlineLibrary.Service.CommunityService
                 Content = dto.Content,
                 UserId = userId,
                 CommunityId = dto.CommunityId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                CommentCount = 0
             };
 
             if (dto.ImageFile != null && dto.ImageFile.Length > 0)
@@ -230,9 +240,16 @@ namespace OnlineLibrary.Service.CommunityService
             }
 
             await _unitOfWork.Repository<CommunityPost>().AddAsync(post);
+
+            community.PostCount = (community.PostCount ?? 0) + 1;
+            _unitOfWork.Repository<Community>().Update(community);
+
             await _unitOfWork.CountAsync();
 
-            return _mapper.Map<CommunityPostDto>(post);
+            var postDto = _mapper.Map<CommunityPostDto>(post);
+            postDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+            postDto.CommunityName = community.Name;
+            return postDto;
         }
 
         public async Task<IEnumerable<CommunityPostDto>> GetCommunityPostsAsync(long communityId, string currentUserId)
@@ -244,17 +261,40 @@ namespace OnlineLibrary.Service.CommunityService
             }
 
             var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllAsync())
-                .Where(p => p.CommunityId == communityId)
+                .Where(p => p.CommunityId.HasValue && p.CommunityId.Value == communityId)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToList();
 
+            if (!posts.Any())
+            {
+                return new List<CommunityPostDto>();
+            }
+
             var postDtos = _mapper.Map<IEnumerable<CommunityPostDto>>(posts);
+
+            var postIds = posts.Select(p => p.Id).ToList();
+            var allLikes = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
+                .Where(pl => pl.PostId.HasValue && postIds.Contains(pl.PostId.Value))
+                .ToList();
+
+            var allComments = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
+                .Where(c => c.PostId.HasValue && postIds.Contains(c.PostId.Value))
+                .ToList();
+
+            var allShares = (await _unitOfWork.Repository<PostShare>().GetAllAsync())
+                .Where(s => s.PostId.HasValue && postIds.Contains(s.PostId.Value))
+                .ToList();
 
             foreach (var postDto in postDtos)
             {
-                var isLiked = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
-                    .Any(pl => pl.PostId == postDto.Id && pl.UserId == currentUserId);
-                postDto.IsLiked = isLiked;
+                postDto.IsLiked = allLikes.Any(pl => pl.PostId.HasValue && pl.PostId.Value == postDto.Id && pl.UserId == currentUserId);
+                postDto.LikeCount = allLikes.Count(pl => pl.PostId.HasValue && pl.PostId.Value == postDto.Id);
+                postDto.CommentCount = allComments.Count(c => c.PostId.HasValue && c.PostId.Value == postDto.Id);
+                postDto.ShareCount = allShares.Count(s => s.PostId.HasValue && s.PostId.Value == postDto.Id);
+                postDto.CommunityName = community.Name;
+
+                var user = await _userManager.FindByIdAsync(postDto.UserId);
+                postDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
             }
 
             return postDtos;
@@ -287,13 +327,40 @@ namespace OnlineLibrary.Service.CommunityService
                 Content = dto.Content,
                 UserId = userId,
                 PostId = dto.PostId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                ImageUrl = string.Empty // Set default value
             };
 
+            // Image is optional now
+            if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+            {
+                var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "post-images");
+                if (!Directory.Exists(imagesFolder))
+                {
+                    Directory.CreateDirectory(imagesFolder);
+                }
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{dto.ImageFile.FileName}";
+                var filePath = Path.Combine(imagesFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.ImageFile.CopyToAsync(stream);
+                }
+
+                comment.ImageUrl = $"/post-images/{uniqueFileName}";
+            }
+
             await _unitOfWork.Repository<PostComment>().AddAsync(comment);
+
+            post.CommentCount = (post.CommentCount ?? 0) + 1;
+            _unitOfWork.Repository<CommunityPost>().Update(post);
+
             await _unitOfWork.CountAsync();
 
-            return _mapper.Map<PostCommentDto>(comment);
+            var commentDto = _mapper.Map<PostCommentDto>(comment);
+            commentDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+            return commentDto;
         }
 
         public async Task<IEnumerable<PostCommentDto>> GetPostCommentsAsync(long postId)
@@ -304,12 +371,20 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("Post not found.");
             }
 
-            var comments = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
+            var comments = (await _unitOfWork.Repository<PostComment>().GetAllWithIncludeAsync(c => c.User))
                 .Where(c => c.PostId == postId)
                 .OrderBy(c => c.CreatedAt)
                 .ToList();
 
-            return _mapper.Map<IEnumerable<PostCommentDto>>(comments);
+            var commentDtos = _mapper.Map<IEnumerable<PostCommentDto>>(comments);
+
+            foreach (var commentDto in commentDtos)
+            {
+                var user = await _userManager.FindByIdAsync(commentDto.UserId);
+                commentDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+            }
+
+            return commentDtos;
         }
 
         public async Task LikePostAsync(long postId, string userId)
@@ -485,19 +560,87 @@ namespace OnlineLibrary.Service.CommunityService
             var isAuthor = post.UserId == requesterId;
             var isAdmin = community.AdminId == requesterId;
             var isModerator = false;
+            var isMember = false;
 
-            if (!isAdmin)
+            var members = await _unitOfWork.Repository<CommunityMember>().GetAllAsync();
+            var member = members.FirstOrDefault(m => m.CommunityId == post.CommunityId && m.UserId == requesterId);
+
+            if (member != null)
             {
-                var member = (await _unitOfWork.Repository<CommunityMember>().GetAllAsync())
-                    .FirstOrDefault(m => m.CommunityId == post.CommunityId && m.UserId == requesterId);
+                isMember = true;
+                if (!isAdmin)
+                {
+                    isModerator = member.IsModerator ?? false;
+                }
+            }
 
-                isModerator = member?.IsModerator ?? false;
+            if (!isMember)
+            {
+                throw new Exception("You must be a member of the community to delete posts.");
             }
 
             if (!isAuthor && !isAdmin && !isModerator)
             {
-                throw new Exception("You don't have permission to delete this post.");
+                throw new Exception($"You don't have permission to delete this post. " +
+                    $"Details: Author={isAuthor}, Admin={isAdmin}, Moderator={isModerator}, " +
+                    $"PostCommunityId={post.CommunityId}, RequesterId={requesterId}");
             }
+
+            var comments = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
+                .Where(c => c.PostId == postId)
+                .ToList();
+            foreach (var comment in comments)
+            {
+                if (!string.IsNullOrEmpty(comment.ImageUrl))
+                {
+                    var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", comment.ImageUrl.TrimStart('/'));
+                    if (File.Exists(imagePath))
+                    {
+                        File.Delete(imagePath);
+                    }
+                }
+                _unitOfWork.Repository<PostComment>().Delete(comment);
+            }
+            if (comments.Any())
+            {
+                await _unitOfWork.CountAsync();
+            }
+
+            var likes = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
+                .Where(l => l.PostId == postId)
+                .ToList();
+            foreach (var like in likes)
+            {
+                _unitOfWork.Repository<PostLike>().Delete(like);
+            }
+            if (likes.Any())
+            {
+                await _unitOfWork.CountAsync();
+            }
+
+            var shares = (await _unitOfWork.Repository<PostShare>().GetAllAsync())
+                .Where(s => s.PostId == postId)
+                .ToList();
+            foreach (var share in shares)
+            {
+                _unitOfWork.Repository<PostShare>().Delete(share);
+            }
+            if (shares.Any())
+            {
+                await _unitOfWork.CountAsync();
+            }
+
+            if (!string.IsNullOrEmpty(post.ImageUrl))
+            {
+                var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", post.ImageUrl.TrimStart('/'));
+                if (File.Exists(imagePath))
+                {
+                    File.Delete(imagePath);
+                }
+            }
+
+            community.PostCount = (community.PostCount ?? 0) > 0 ? community.PostCount - 1 : 0;
+            _unitOfWork.Repository<Community>().Update(community);
 
             _unitOfWork.Repository<CommunityPost>().Delete(post);
             await _unitOfWork.CountAsync();
@@ -552,6 +695,18 @@ namespace OnlineLibrary.Service.CommunityService
             {
                 throw new Exception("You don't have permission to delete this comment.");
             }
+
+            if (!string.IsNullOrEmpty(comment.ImageUrl))
+            {
+                var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", comment.ImageUrl.TrimStart('/'));
+                if (File.Exists(imagePath))
+                {
+                    File.Delete(imagePath);
+                }
+            }
+
+            post.CommentCount = (post.CommentCount ?? 0) > 0 ? post.CommentCount - 1 : 0;
+            _unitOfWork.Repository<CommunityPost>().Update(post);
 
             _unitOfWork.Repository<PostComment>().Delete(comment);
             await _unitOfWork.CountAsync();
