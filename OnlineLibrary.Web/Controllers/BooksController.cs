@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary.Service.BookService;
 using OnlineLibrary.Service.BookService.Dtos;
 using System.Threading.Tasks;
@@ -52,6 +53,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> DeleteBook(long id)
         {
             await _bookService.DeleteBookAsync(id);
