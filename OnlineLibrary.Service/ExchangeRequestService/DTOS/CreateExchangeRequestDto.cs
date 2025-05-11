@@ -11,5 +11,7 @@ namespace OnlineLibrary.Service.ExchangeRequestService.DTOS
         public string? BookTitle { get; set; }
         public string? AuthorName { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? longitude { get; set; }
+        public string? latitude { get; set; }
     }
 }
