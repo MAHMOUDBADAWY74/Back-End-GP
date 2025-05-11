@@ -14,8 +14,8 @@ namespace OnlineLibrary.Service.UserProfileService.Dtos
         public string? Bio { get; set; }
         public string? Hobbies { get; set; }
         public string? FavoriteBookTopics { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
+        public string? FirstName { get; set; }    // أضفنا FirstName
+        public string? LastName { get; set; }     // أضفنا LastName
         public string? Gender { get; set; }
         public int? Age { get; set; }
     }

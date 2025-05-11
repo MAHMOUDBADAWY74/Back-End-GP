@@ -1,23 +1,24 @@
 ﻿using AutoMapper;
 using OnlineLibrary.Data.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 
 namespace OnlineLibrary.Service.UserProfileService.Dtos
 {
-    public class UserProfileProfile :Profile
+    public class UserProfileProfile : Profile
     {
         public UserProfileProfile()
         {
             CreateMap<UserProfile, UserProfileDto>()
-                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User!.firstName))
-                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User!.LastName))
-                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User!.Gender))
-                .ForMember(dest => dest.Age, opt => opt.MapFrom(src => CalculateAge(src.User!.DateOfBirth)));
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.ProfilePhotoUrl, opt => opt.MapFrom(src => src.ProfilePhoto))
+                .ForMember(dest => dest.CoverPhotoUrl, opt => opt.MapFrom(src => src.CoverPhoto))
+                .ForMember(dest => dest.Bio, opt => opt.MapFrom(src => src.Bio))
+                .ForMember(dest => dest.Hobbies, opt => opt.MapFrom(src => src.Hobbies))
+                .ForMember(dest => dest.FavoriteBookTopics, opt => opt.MapFrom(src => src.FavoriteBookTopics))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.firstName)) // جلب FirstName
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))   // جلب LastName
+                .ForMember(dest => dest.Gender, opt => opt.Ignore())
+                .ForMember(dest => dest.Age, opt => opt.Ignore());
 
             CreateMap<UserProfileCreateDto, UserProfile>();
             CreateMap<UserProfileUpdateDto, UserProfile>();
@@ -32,8 +33,5 @@ namespace OnlineLibrary.Service.UserProfileService.Dtos
             if (dateOfBirth.Value > today.AddYears(-age)) age--;
             return age;
         }
-
-
-
     }
 }

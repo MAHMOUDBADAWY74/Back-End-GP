@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using OnlineLibrary.Service;
 using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Service.UserProfileService;
@@ -10,9 +9,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace OnlineLibrary.Web.Controllers
 {
     [Authorize]
+    [Route("api/[controller]")]
+    [ApiController]
     public class ProfileController : BaseController
-    
-        {
+    {
         private readonly IUserProfile _profileService;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -24,8 +24,6 @@ namespace OnlineLibrary.Web.Controllers
             _userManager = userManager;
         }
 
-
-
         [HttpGet("me")]
         public async Task<ActionResult<UserProfileDto>> GetMyProfile()
         {
@@ -35,7 +33,7 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<UserProfileDto>> CreateProfile(UserProfileCreateDto profileDto)
+        public async Task<ActionResult<UserProfileDto>> CreateProfile([FromForm] UserProfileCreateDto profileDto)
         {
             var userId = _userManager.GetUserId(User);
             var profile = await _profileService.CreateProfileAsync(userId, profileDto);
@@ -43,12 +41,11 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<UserProfileDto>> UpdateProfile(UserProfileUpdateDto profileDto)
+        public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromForm] UserProfileUpdateDto profileDto)
         {
             var userId = _userManager.GetUserId(User);
             var profile = await _profileService.UpdateProfileAsync(userId, profileDto);
             return Ok(profile);
         }
-
     }
 }
