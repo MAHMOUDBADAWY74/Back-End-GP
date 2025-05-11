@@ -27,9 +27,11 @@ namespace OnlineLibrary.Web.Controllers
         [HttpPost]
         public async Task<ActionResult<UserDto>> Register(RegisterDto input)
         {
+            Console.WriteLine($"Registering user: Email={input.Email}, FirstName={input.FirstName}, LastName={input.LastName}");
             var user = await _userService.Register(input);
             if (user == null)
                 return BadRequest(new UserException(400, "Email Already Exists"));
+            Console.WriteLine($"User registered: FirstName={user.FirstName}, LastName={user.LastName}");
             return Ok(user);
         }
 

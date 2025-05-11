@@ -13,7 +13,5 @@ namespace OnlineLibrary.Service.UserProfileService
         Task<UserProfileDto> GetProfileAsync(string userId);
         Task<UserProfileDto> CreateProfileAsync(string userId, UserProfileCreateDto profileDto);
         Task<UserProfileDto> UpdateProfileAsync(string userId, UserProfileUpdateDto profileDto);
-        Task UpdateProfilePhotoAsync(string userId, IFormFile file);
-        Task UpdateCoverPhotoAsync(string userId, IFormFile file);
     }
 }

@@ -55,6 +55,7 @@ namespace OnlineLibrary.Service.UserService
             {
                 Id = Guid.Parse(user.Id),
                 FirstName = user.firstName,
+                LastName = user.LastName, // أضفنا LastName
                 UserName = user.UserName,
                 Email = user.Email!,
                 Token = await _tokenService.GenerateJwtToken(user)
@@ -71,6 +72,7 @@ namespace OnlineLibrary.Service.UserService
             var appUser = new ApplicationUser
             {
                 firstName = input.FirstName,
+                LastName = input.LastName, // أضفنا LastName
                 Email = input.Email,
                 UserName = $"{input.FirstName}{input.LastName}"
             };
@@ -91,6 +93,7 @@ namespace OnlineLibrary.Service.UserService
             {
                 Id = Guid.Parse(appUser.Id),
                 FirstName = appUser.firstName,
+                LastName = appUser.LastName, // أضفنا LastName
                 Email = appUser.Email!,
                 Token = await _tokenService.GenerateJwtToken(appUser)
             };
@@ -173,8 +176,6 @@ namespace OnlineLibrary.Service.UserService
 
             return true;
         }
-
-        
 
         private string GetPropertyValue(ApplicationUser user, string propertyName)
         {

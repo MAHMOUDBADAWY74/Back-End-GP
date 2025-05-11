@@ -192,7 +192,7 @@ namespace OnlineLibrary.Data.Migrations
                     b.HasIndex("AppUserId")
                         .IsUnique();
 
-                    b.ToTable("Address");
+                    b.ToTable("Address", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.ApplicationUser", b =>
@@ -303,7 +303,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BooksData");
+                    b.ToTable("BooksData", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Community", b =>
@@ -335,7 +335,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("AdminId");
 
-                    b.ToTable("Communities");
+                    b.ToTable("Communities", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityMember", b =>
@@ -367,7 +367,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CommunityMembers");
+                    b.ToTable("CommunityMembers", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityPost", b =>
@@ -406,7 +406,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CommunityPosts");
+                    b.ToTable("CommunityPosts", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.ExchangeBookRequestx", b =>
@@ -456,7 +456,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("exchangeBooksRequests");
+                    b.ToTable("exchangeBooksRequests", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.FavoriteBook", b =>
@@ -485,7 +485,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FavoriteBook");
+                    b.ToTable("FavoriteBook", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.History", b =>
@@ -514,7 +514,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("History");
+                    b.ToTable("History", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.PendingUserChange", b =>
@@ -552,7 +552,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PendingUserChanges");
+                    b.ToTable("PendingUserChanges", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.PostComment", b =>
@@ -585,7 +585,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostComments");
+                    b.ToTable("PostComments", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.PostLike", b =>
@@ -611,7 +611,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostLikes");
+                    b.ToTable("PostLikes", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.PostShare", b =>
@@ -642,7 +642,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostShare");
+                    b.ToTable("PostShare", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Readlist", b =>
@@ -668,7 +668,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Readlists");
+                    b.ToTable("Readlists", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Review", b =>
@@ -703,7 +703,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.UserProfile", b =>
@@ -742,7 +742,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserProfiles");
+                    b.ToTable("UserProfiles", (string)null);
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Wishlist", b =>
@@ -771,7 +771,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Wishlists");
+                    b.ToTable("Wishlists", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
