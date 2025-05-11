@@ -27,6 +27,7 @@ namespace OnlineLibrary.Data.Contexts
         public DbSet<PostLike> PostLikes { get; set; }
         public DbSet<PostComment> PostComments { get; set; }
         public DbSet<ExchangeBookRequestx> exchangeBooksRequests { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
 
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)
