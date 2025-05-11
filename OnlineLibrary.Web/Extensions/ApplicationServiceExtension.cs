@@ -14,6 +14,8 @@ using OnlineLibrary.Service.ExchangeRequestService.DTOS;
 using OnlineLibrary.Service.ExchangeRequestService;
 
 using System.ComponentModel;
+using OnlineLibrary.Service.UserProfileService.Dtos;
+using OnlineLibrary.Service.UserProfileService;
 
 namespace OnlineLibrary.Web.Extensions
 {
@@ -26,9 +28,10 @@ namespace OnlineLibrary.Web.Extensions
             services.AddAutoMapper(typeof(BookProfile));
             services.AddAutoMapper(typeof(CommunityProfile));
             services.AddAutoMapper(typeof(ExchangeBooksProfile));
+            services.AddAutoMapper(typeof(UserProfileProfile));
 
           services.AddScoped<IBookService, BookService>();
-
+            services.AddScoped<IUserProfile,UserProfiles>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAdminService, AdminService>();
