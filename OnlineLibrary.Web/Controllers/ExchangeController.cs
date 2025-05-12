@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR; 
+using Microsoft.AspNetCore.SignalR;
 using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Service.ExchangeRequestService;
 using OnlineLibrary.Service.ExchangeRequestService.DTOS;
-using OnlineLibrary.Web.Hubs; 
+using OnlineLibrary.Web.Hubs;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -17,12 +17,12 @@ namespace OnlineLibrary.Web.Controllers
     {
         private readonly IExchangeBooks _exchangeBooks;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IHubContext<NotificationHub> _notificationHub; 
+        private readonly IHubContext<NotificationHub> _notificationHub;
 
         public ExchangeController(
             IExchangeBooks exchangeBooks,
             UserManager<ApplicationUser> userManager,
-            IHubContext<NotificationHub> notificationHub) 
+            IHubContext<NotificationHub> notificationHub)
         {
             _exchangeBooks = exchangeBooks;
             _userManager = userManager;
@@ -42,7 +42,6 @@ namespace OnlineLibrary.Web.Controllers
             var userId = GetUserId();
             await _exchangeBooks.CreateExchangeRequestAsync(userId, requestDto);
 
-           
             string message = $"A new exchange request has been created by {userId}! Check it out.";
             await _notificationHub.Clients.All.SendAsync("ReceiveNotification", message);
             Console.WriteLine($"Sending notification to all users: {message}");
@@ -58,7 +57,7 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(requests);
         }
 
-        [HttpPost]
+        [HttpPost("accept")] // تعديل المسار ليكون /api/Exchange/accept
         public async Task<IActionResult> AcceptRequest([FromBody] AcceptExchangeRequestDto acceptDto)
         {
             if (!ModelState.IsValid)
