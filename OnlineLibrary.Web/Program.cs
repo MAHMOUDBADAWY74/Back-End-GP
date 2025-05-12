@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Design;
 using Store.Web.Extentions;
+using OnlineLibrary.Web.Hubs;
 
 namespace OnlineLibrary.Web
 {
@@ -75,6 +76,9 @@ namespace OnlineLibrary.Web
                 });
             });
 
+            // إضافة SignalR
+            builder.Services.AddSignalR(); 
+
             var app = builder.Build();
 
             // Seed Roles and Users using OnlineLibraryContextSeed
@@ -131,6 +135,10 @@ namespace OnlineLibrary.Web
             app.UseAuthorization();
             app.UseCors("AllowAll");
             app.UseStaticFiles();
+
+            
+            app.MapHub<NotificationHub>("/notificationHub");
+
             app.MapControllers();
 
             await app.RunAsync();
