@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using OnlineLibrary.Service.BookService;
 using OnlineLibrary.Service.BookService.Dtos;
+using OnlineLibrary.Web.Hubs; 
 using System.Threading.Tasks;
 
 namespace OnlineLibrary.Web.Controllers
@@ -11,10 +13,14 @@ namespace OnlineLibrary.Web.Controllers
     public class BooksController : BaseController
     {
         private readonly IBookService _bookService;
+        private readonly IHubContext<NotificationHub> _notificationHub;
 
-        public BooksController(IBookService bookService)
+        public BooksController(
+            IBookService bookService,
+            IHubContext<NotificationHub> notificationHub) 
         {
             _bookService = bookService;
+            _notificationHub = notificationHub;
         }
 
         [HttpGet]
@@ -35,13 +41,21 @@ namespace OnlineLibrary.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> AddBook([FromForm] AddBookDetailsDto addBookDetailsDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
             await _bookService.AddBookAsync(addBookDetailsDto);
+
+            
+            string message = $"A new book '{addBookDetailsDto.Title}' has been added!";
+            await _notificationHub.Clients.All.SendAsync("ReceiveNotification", message);
+            Console.WriteLine($"Sending notification to all users: {message}");
+
             return Ok("Book added successfully.");
         }
 

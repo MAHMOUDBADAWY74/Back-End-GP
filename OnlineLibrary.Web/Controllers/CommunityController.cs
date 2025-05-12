@@ -2,11 +2,15 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Service.CommunityService;
 using OnlineLibrary.Service.CommunityService.Dtos;
+using OnlineLibrary.Web.Hubs;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -16,13 +20,19 @@ namespace OnlineLibrary.Web.Controllers
     {
         private readonly ICommunityService _communityService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IHubContext<NotificationHub> _notificationHub;
+        private readonly OnlineLibraryIdentityDbContext _dbContext;
 
         public CommunityController(
             ICommunityService communityService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IHubContext<NotificationHub> notificationHub,
+            OnlineLibraryIdentityDbContext dbContext)
         {
             _communityService = communityService;
             _userManager = userManager;
+            _notificationHub = notificationHub;
+            _dbContext = dbContext;
         }
 
         private string GetUserId() => _userManager.GetUserId(User);
@@ -46,7 +56,7 @@ namespace OnlineLibrary.Web.Controllers
                 return NotFound();
 
             var userId = GetUserId();
-            var communityMembers = await _communityService.GetCommunityMembersAsync(id); // New method needed
+            var communityMembers = await _communityService.GetCommunityMembersAsync(id);
             community.IsMember = communityMembers.Any(m => m.UserId == userId);
 
             return Ok(community);
@@ -85,6 +95,21 @@ namespace OnlineLibrary.Web.Controllers
         {
             var userId = GetUserId();
             var post = await _communityService.CreatePostAsync(dto, userId);
+
+            
+            var communityMembers = _dbContext.CommunityMembers
+                .Where(cm => cm.CommunityId == dto.CommunityId && cm.UserId != userId)
+                .Select(cm => cm.UserId)
+                .ToList();
+
+            
+            string message = $"A new post has been added to the community by {userId}!";
+            foreach (var memberId in communityMembers)
+            {
+                await _notificationHub.Clients.User(memberId).SendAsync("ReceiveNotification", message);
+                Console.WriteLine($"Sending notification to {memberId}: {message}");
+            }
+
             return Ok(post);
         }
 
@@ -102,7 +127,18 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<IActionResult> LikePost(long postId)
         {
             var userId = GetUserId();
+            string postOwnerId = await GetPostOwnerId(postId);
+            if (string.IsNullOrEmpty(postOwnerId))
+            {
+                return NotFound("Post not found");
+            }
+
             await _communityService.LikePostAsync(postId, userId);
+
+            string message = $"User {userId} liked your post!";
+            await _notificationHub.Clients.User(postOwnerId).SendAsync("ReceiveNotification", message);
+            Console.WriteLine($"Sending notification to {postOwnerId}: {message}");
+
             return Ok();
         }
 
@@ -120,7 +156,18 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<ActionResult<PostCommentDto>> AddComment(CreateCommentDto dto)
         {
             var userId = GetUserId();
+            string postOwnerId = await GetPostOwnerId(dto.PostId);
+            if (string.IsNullOrEmpty(postOwnerId))
+            {
+                return NotFound("Post not found");
+            }
+
             var comment = await _communityService.AddCommentAsync(dto, userId);
+
+            string message = $"User {userId} commented on your post!";
+            await _notificationHub.Clients.User(postOwnerId).SendAsync("ReceiveNotification", message);
+            Console.WriteLine($"Sending notification to {postOwnerId}: {message}");
+
             return Ok(comment);
         }
 
@@ -137,7 +184,18 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<IActionResult> SharePost(long postId, [FromQuery] long? communityId)
         {
             var userId = GetUserId();
+            string postOwnerId = await GetPostOwnerId(postId);
+            if (string.IsNullOrEmpty(postOwnerId))
+            {
+                return NotFound("Post not found");
+            }
+
             await _communityService.SharePostAsync(postId, userId, communityId);
+
+            string message = $"User {userId} shared your post!";
+            await _notificationHub.Clients.User(postOwnerId).SendAsync("ReceiveNotification", message);
+            Console.WriteLine($"Sending notification to {postOwnerId}: {message}");
+
             return Ok();
         }
 
@@ -193,6 +251,12 @@ namespace OnlineLibrary.Web.Controllers
             var requesterId = GetUserId();
             var result = await _communityService.UnbanUserAsync(communityId, requesterId, userId);
             return Ok(new { Unbanned = result });
+        }
+
+        private async Task<string> GetPostOwnerId(long postId)
+        {
+            var post = await _dbContext.CommunityPosts.FindAsync(postId);
+            return post?.UserId;
         }
     }
 }
