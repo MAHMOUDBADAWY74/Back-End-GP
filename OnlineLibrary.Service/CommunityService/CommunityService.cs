@@ -83,21 +83,8 @@ namespace OnlineLibrary.Service.CommunityService
             var communityMembers = await _unitOfWork.Repository<CommunityMember>().GetAllAsync();
             var communityPosts = await _unitOfWork.Repository<CommunityPost>().GetAllAsync();
 
-            IEnumerable<Community> filteredCommunities;
-            if (isAdmin || string.IsNullOrEmpty(userId))
-            {
-                filteredCommunities = communities;
-            }
-            else
-            {
-                var userCommunityIds = communityMembers
-                    .Where(m => m.UserId == userId)
-                    .Select(m => m.CommunityId)
-                    .ToList();
-                filteredCommunities = communities
-                    .Where(c => userCommunityIds.Contains(c.Id))
-                    .ToList();
-            }
+            // إذا كان فيه userId أو isAdmin، نفلتر الكوميونيتيز، لو لا، نجيب كل الكوميونيتيز
+            IEnumerable<Community> filteredCommunities = communities;
 
             var communityDtos = _mapper.Map<IEnumerable<CommunityDto>>(filteredCommunities);
             foreach (var dto in communityDtos)
