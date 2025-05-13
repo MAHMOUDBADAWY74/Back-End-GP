@@ -41,9 +41,8 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<CommunityDto>>> GetAllCommunities()
         {
-            var userId = GetUserId();
-            var isAdmin = User.IsInRole("Admin");
-            var communities = await _communityService.GetAllCommunitiesAsync(userId, isAdmin);
+            // جيب كل الكوميونيتيز بدون فلترة بناءً على المستخدم
+            var communities = await _communityService.GetAllCommunitiesAsync();
             return Ok(communities);
         }
 
@@ -96,13 +95,11 @@ namespace OnlineLibrary.Web.Controllers
             var userId = GetUserId();
             var post = await _communityService.CreatePostAsync(dto, userId);
 
-            
             var communityMembers = _dbContext.CommunityMembers
                 .Where(cm => cm.CommunityId == dto.CommunityId && cm.UserId != userId)
                 .Select(cm => cm.UserId)
                 .ToList();
 
-            
             string message = $"A new post has been added to the community by {userId}!";
             foreach (var memberId in communityMembers)
             {
