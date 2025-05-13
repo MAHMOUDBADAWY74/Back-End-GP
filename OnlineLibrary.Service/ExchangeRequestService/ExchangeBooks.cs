@@ -36,6 +36,9 @@ namespace OnlineLibrary.Service.ExchangeRequestService
 
             request.IsAccepted = true;
             request.ReceiverUserId = acceptingUserId;
+            var receiver = await _userManager.FindByIdAsync(acceptingUserId);
+            request.ReceiverName = receiver != null ? $"{receiver.firstName} {receiver.LastName}" : null;
+
             _unitOfWork.Repository<ExchangeBookRequestx>().Update(request);
             await _unitOfWork.CountAsync();
             return true;
@@ -45,6 +48,9 @@ namespace OnlineLibrary.Service.ExchangeRequestService
         {
             var exchangeRequest = _mapper.Map<ExchangeBookRequestx>(requestDto);
             exchangeRequest.SenderUserId = userId;
+            var sender = await _userManager.FindByIdAsync(userId);
+            exchangeRequest.SenderName = sender != null ? $"{sender.firstName} {sender.LastName}" : null;
+
             await _unitOfWork.Repository<ExchangeBookRequestx>().AddAsync(exchangeRequest);
             await _unitOfWork.CountAsync();
         }
