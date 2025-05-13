@@ -10,10 +10,8 @@ using System.Threading.Tasks;
 
 namespace OnlineLibrary.Data.Contexts
 {
-   public class OnlineLibraryIdentityDbContext : IdentityDbContext<ApplicationUser>
-
+    public class OnlineLibraryIdentityDbContext : IdentityDbContext<ApplicationUser>
     {
-
         public DbSet<PendingUserChange> PendingUserChanges { get; set; }
         public DbSet<BooksDatum> BooksData { get; set; }
         public DbSet<History> History { get; set; }
@@ -32,13 +30,26 @@ namespace OnlineLibrary.Data.Contexts
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            
+            modelBuilder.Entity<ExchangeBookRequestx>()
+                .HasOne(e => e.Sender)
+                .WithMany()
+                .HasForeignKey(e => e.SenderUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ExchangeBookRequestx>()
+                .HasOne(e => e.Receiver)
+                .WithMany()
+                .HasForeignKey(e => e.ReceiverUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
