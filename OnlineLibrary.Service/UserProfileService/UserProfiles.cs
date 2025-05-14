@@ -5,6 +5,7 @@ using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Repository.Interfaces;
 using OnlineLibrary.Repository.Specification;
 using OnlineLibrary.Service.UserProfileService.Dtos;
+using OnlineLibrary.Service.CommunityService;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -16,19 +17,25 @@ namespace OnlineLibrary.Service.UserProfileService
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ICommunityService _communityService;
 
         public UserProfiles(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            ICommunityService communityService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _userManager = userManager;
+            _communityService = communityService;
         }
 
         public async Task<UserProfileDto> CreateProfileAsync(string userId, UserProfileCreateDto profileDto)
         {
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentNullException(nameof(userId), "User ID cannot be null or empty.");
+
             var existingProfile = await _unitOfWork.Repository<UserProfile>().GetAllWithSpecAsync(
                 new UserProfileWithUserSpecification(userId));
 
@@ -39,8 +46,9 @@ namespace OnlineLibrary.Service.UserProfileService
 
             var profile = _mapper.Map<UserProfile>(profileDto);
             profile.UserId = userId;
+            profile.Hobbies = profile.Hobbies ?? new List<string>();
+            profile.FavoriteBookTopics = profile.FavoriteBookTopics ?? new List<string>();
 
-            // Handle Profile Photo upload
             if (profileDto.ProfilePhoto != null && profileDto.ProfilePhoto.Length > 0)
             {
                 var sanitizedName = Guid.NewGuid().ToString();
@@ -55,7 +63,6 @@ namespace OnlineLibrary.Service.UserProfileService
                 profile.ProfilePhoto = $"/profile-photos/{fileName}";
             }
 
-            // Handle Cover Photo upload
             if (profileDto.CoverPhoto != null && profileDto.CoverPhoto.Length > 0)
             {
                 var sanitizedName = Guid.NewGuid().ToString();
@@ -73,7 +80,6 @@ namespace OnlineLibrary.Service.UserProfileService
             await _unitOfWork.Repository<UserProfile>().AddAsync(profile);
             await _unitOfWork.CountAsync();
 
-            // تحميل ApplicationUser قبل الـ mapping
             profile.User = await _userManager.FindByIdAsync(userId);
 
             return _mapper.Map<UserProfileDto>(profile);
@@ -81,13 +87,27 @@ namespace OnlineLibrary.Service.UserProfileService
 
         public async Task<UserProfileDto> GetProfileAsync(string userId)
         {
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentNullException(nameof(userId), "User ID cannot be null or empty.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception($"User with ID {userId} not found.");
+            }
+
             var profile = await _unitOfWork.Repository<UserProfile>().GetAllWithSpecAsync(
                 new UserProfileWithUserSpecification(userId));
 
             var userProfile = profile.FirstOrDefault();
             if (userProfile == null)
             {
-                var defaultProfile = new UserProfile { UserId = userId };
+                var defaultProfile = new UserProfile
+                {
+                    UserId = userId,
+                    Hobbies = new List<string>(),
+                    FavoriteBookTopics = new List<string>()
+                };
                 await _unitOfWork.Repository<UserProfile>().AddAsync(defaultProfile);
                 await _unitOfWork.CountAsync();
                 userProfile = defaultProfile;
@@ -95,15 +115,49 @@ namespace OnlineLibrary.Service.UserProfileService
 
             if (userProfile.User == null)
             {
-                var user = await _userManager.FindByIdAsync(userId);
                 userProfile.User = user;
             }
 
-            return _mapper.Map<UserProfileDto>(userProfile);
+            var profileDto = _mapper.Map<UserProfileDto>(userProfile);
+
+            var posts = await _communityService.GetUserPostsAsync(userId);
+            profileDto.Posts = posts.ToList();
+
+            return profileDto;
+        }
+
+        public async Task<UserProfileDto> GetProfileByIdAsync(long profileId)
+        {
+            if (profileId <= 0)
+                throw new ArgumentException("Profile ID must be a positive number.", nameof(profileId));
+
+            var profile = await _unitOfWork.Repository<UserProfile>().GetAllWithSpecAsync(
+                new UserProfileByIdSpecification(profileId));
+
+            var userProfile = profile.FirstOrDefault();
+            if (userProfile == null)
+            {
+                throw new Exception($"Profile with ID {profileId} not found.");
+            }
+
+            if (userProfile.User == null)
+            {
+                userProfile.User = await _userManager.FindByIdAsync(userProfile.UserId);
+            }
+
+            var profileDto = _mapper.Map<UserProfileDto>(userProfile);
+
+            var posts = await _communityService.GetUserPostsAsync(userProfile.UserId);
+            profileDto.Posts = posts.ToList();
+
+            return profileDto;
         }
 
         public async Task<UserProfileDto> UpdateProfileAsync(string userId, UserProfileUpdateDto profileDto)
         {
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentNullException(nameof(userId), "User ID cannot be null or empty.");
+
             var profile = (await _unitOfWork.Repository<UserProfile>().GetAllWithSpecAsync(
                 new UserProfileWithUserSpecification(userId))).FirstOrDefault();
 
@@ -114,8 +168,9 @@ namespace OnlineLibrary.Service.UserProfileService
 
             _mapper.Map(profileDto, profile);
             profile.LastUpdated = DateTime.UtcNow;
+            profile.Hobbies = profile.Hobbies ?? new List<string>();
+            profile.FavoriteBookTopics = profile.FavoriteBookTopics ?? new List<string>();
 
-            // Handle Profile Photo upload (update or replace)
             if (profileDto.ProfilePhoto != null && profileDto.ProfilePhoto.Length > 0)
             {
                 if (!string.IsNullOrEmpty(profile.ProfilePhoto))
@@ -136,7 +191,6 @@ namespace OnlineLibrary.Service.UserProfileService
                 profile.ProfilePhoto = $"/profile-photos/{fileName}";
             }
 
-            // Handle Cover Photo upload (update or replace)
             if (profileDto.CoverPhoto != null && profileDto.CoverPhoto.Length > 0)
             {
                 if (!string.IsNullOrEmpty(profile.CoverPhoto))
@@ -160,7 +214,6 @@ namespace OnlineLibrary.Service.UserProfileService
             _unitOfWork.Repository<UserProfile>().Update(profile);
             await _unitOfWork.CountAsync();
 
-            // تحميل ApplicationUser قبل الـ mapping
             profile.User = await _userManager.FindByIdAsync(userId);
 
             return _mapper.Map<UserProfileDto>(profile);
@@ -170,6 +223,15 @@ namespace OnlineLibrary.Service.UserProfileService
         {
             public UserProfileWithUserSpecification(string userId)
                 : base(p => p.UserId == userId)
+            {
+                Includes.Add(entity => entity.User);
+            }
+        }
+
+        public class UserProfileByIdSpecification : BaseSpecification<UserProfile>
+        {
+            public UserProfileByIdSpecification(long profileId)
+                : base(p => p.Id == profileId)
             {
                 Includes.Add(entity => entity.User);
             }

@@ -10,8 +10,8 @@ namespace OnlineLibrary.Service.UserProfileService.Dtos
     public class UserProfileUpdateDto
     {
         public string? Bio { get; set; }
-        public string? Hobbies { get; set; }
-        public string? FavoriteBookTopics { get; set; }
+        public string[]? Hobbies { get; set; } 
+        public string[]? FavoriteBookTopics { get; set; }
         public IFormFile? ProfilePhoto { get; set; } 
         public IFormFile? CoverPhoto { get; set; }
         

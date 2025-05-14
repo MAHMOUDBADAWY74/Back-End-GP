@@ -13,8 +13,8 @@ namespace OnlineLibrary.Data.Entities
         public string? ProfilePhoto { get; set; }
         public string? CoverPhoto { get; set; }
         public string? Bio { get; set; }
-        public string? Hobbies { get; set; }
-        public string? FavoriteBookTopics { get; set; }
+        public List<string> Hobbies { get; set; } // Array
+        public List<string> FavoriteBookTopics { get; set; } // Array
         public DateTime? LastUpdated { get; set; } = DateTime.UtcNow;
 
         public ApplicationUser? User { get; set; }

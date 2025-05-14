@@ -292,6 +292,61 @@ namespace OnlineLibrary.Service.CommunityService
             return postDtos;
         }
 
+        public async Task<IEnumerable<CommunityPostDto>> GetUserPostsAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentNullException(nameof(userId), "User ID cannot be null or empty.");
+
+            var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllAsync())
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToList();
+
+            if (!posts.Any())
+            {
+                return new List<CommunityPostDto>();
+            }
+
+            var postDtos = _mapper.Map<IEnumerable<CommunityPostDto>>(posts);
+
+            var postIds = posts.Select(p => p.Id).ToList();
+            var allLikes = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
+                .Where(pl => pl.PostId.HasValue && postIds.Contains(pl.PostId.Value))
+                .ToList();
+
+            var allUnlikes = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
+                .Where(pu => pu.PostId.HasValue && postIds.Contains(pu.PostId.Value))
+                .ToList();
+
+            var allComments = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
+                .Where(c => c.PostId.HasValue && postIds.Contains(c.PostId.Value))
+                .ToList();
+
+            var allShares = (await _unitOfWork.Repository<PostShare>().GetAllAsync())
+                .Where(s => s.PostId.HasValue && postIds.Contains(s.PostId.Value))
+                .ToList();
+
+            var communities = await _unitOfWork.Repository<Community>().GetAllAsync();
+
+            foreach (var postDto in postDtos)
+            {
+                postDto.IsLiked = allLikes.Any(pl => pl.PostId.HasValue && pl.PostId.Value == postDto.Id && pl.UserId == userId);
+                postDto.LikeCount = allLikes.Count(pl => pl.PostId.HasValue && pl.PostId.Value == postDto.Id);
+                postDto.IsUnliked = allUnlikes.Any(pu => pu.PostId.HasValue && pu.PostId.Value == postDto.Id && pu.UserId == userId); // تصحيح هنا
+                postDto.UnlikeCount = allUnlikes.Count(pu => pu.PostId.HasValue && pu.PostId.Value == postDto.Id);
+                postDto.CommentCount = allComments.Count(c => c.PostId.HasValue && c.PostId.Value == postDto.Id);
+                postDto.ShareCount = allShares.Count(s => s.PostId.HasValue && s.PostId.Value == postDto.Id);
+
+                var community = communities.FirstOrDefault(c => c.Id == postDto.CommunityId);
+                postDto.CommunityName = community?.Name ?? "Unknown";
+
+                var user = await _userManager.FindByIdAsync(postDto.UserId);
+                postDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+            }
+
+            return postDtos;
+        }
+
         public async Task<PostCommentDto> AddCommentAsync(CreateCommentDto dto, string userId)
         {
             var post = await _unitOfWork.Repository<CommunityPost>().GetByIdAsync(dto.PostId);
@@ -400,13 +455,13 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("User has already liked this post.");
             }
 
-            
+
             var existingUnlike = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
                 .FirstOrDefault(pu => pu.PostId == postId && pu.UserId == userId);
 
             if (existingUnlike != null)
             {
-                
+
                 _unitOfWork.Repository<PostUnlike>().Delete(existingUnlike);
             }
 
@@ -453,7 +508,7 @@ namespace OnlineLibrary.Service.CommunityService
                     throw new Exception("User has already unliked this post.");
                 }
 
-               
+
                 await AddUnlikeAsync(postId, userId);
             }
 
@@ -474,7 +529,7 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("User not found.");
             }
 
-            
+
             var existingUnlike = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
                 .FirstOrDefault(pu => pu.PostId == postId && pu.UserId == userId);
 

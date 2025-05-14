@@ -136,6 +136,7 @@ namespace OnlineLibrary.Web
             app.UseCors("AllowAll");
             app.UseStaticFiles();
 
+
             
             app.MapHub<NotificationHub>("/notificationHub");
 

@@ -13,5 +13,6 @@ namespace OnlineLibrary.Service.UserProfileService
         Task<UserProfileDto> GetProfileAsync(string userId);
         Task<UserProfileDto> CreateProfileAsync(string userId, UserProfileCreateDto profileDto);
         Task<UserProfileDto> UpdateProfileAsync(string userId, UserProfileUpdateDto profileDto);
+        Task<UserProfileDto> GetProfileByIdAsync(long profileId);
     }
 }
