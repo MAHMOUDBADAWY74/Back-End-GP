@@ -20,6 +20,7 @@ namespace OnlineLibrary.Service.CommunityService
         Task<IEnumerable<CommunityPostDto>> GetCommunityPostsAsync(long communityId, string currentUserId);
         Task LikePostAsync(long postId, string userId);
         Task UnlikePostAsync(long postId, string userId);
+        Task AddUnlikeAsync(long postId, string userId); 
         Task<PostCommentDto> AddCommentAsync(CreateCommentDto dto, string userId);
         Task<IEnumerable<PostCommentDto>> GetPostCommentsAsync(long postId);
         Task SharePostAsync(long postId, string userId, long? sharedWithCommunityId);
