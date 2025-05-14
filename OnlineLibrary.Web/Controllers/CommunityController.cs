@@ -41,7 +41,6 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<CommunityDto>>> GetAllCommunities()
         {
-            // جيب كل الكوميونيتيز بدون فلترة بناءً على المستخدم
             var communities = await _communityService.GetAllCommunitiesAsync();
             return Ok(communities);
         }
@@ -95,17 +94,11 @@ namespace OnlineLibrary.Web.Controllers
             var userId = GetUserId();
             var post = await _communityService.CreatePostAsync(dto, userId);
 
-            var communityMembers = _dbContext.CommunityMembers
-                .Where(cm => cm.CommunityId == dto.CommunityId && cm.UserId != userId)
-                .Select(cm => cm.UserId)
-                .ToList();
-
+            
             string message = $"A new post has been added to the community by {userId}!";
-            foreach (var memberId in communityMembers)
-            {
-                await _notificationHub.Clients.User(memberId).SendAsync("ReceiveNotification", message);
-                Console.WriteLine($"Sending notification to {memberId}: {message}");
-            }
+            await _notificationHub.Clients.Group($"Community_{dto.CommunityId}")
+                .SendAsync("ReceiveNotification", message);
+            Console.WriteLine($"Sending notification to group Community_{dto.CommunityId}: {message}");
 
             return Ok(post);
         }
@@ -144,7 +137,18 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<IActionResult> UnlikePost(long postId)
         {
             var userId = GetUserId();
+            string postOwnerId = await GetPostOwnerId(postId);
+            if (string.IsNullOrEmpty(postOwnerId))
+            {
+                return NotFound("Post not found");
+            }
+
             await _communityService.UnlikePostAsync(postId, userId);
+
+            string message = $"User {userId} unliked your post!";
+            await _notificationHub.Clients.User(postOwnerId).SendAsync("ReceiveNotification", message);
+            Console.WriteLine($"Sending notification to {postOwnerId}: {message}");
+
             return Ok();
         }
 
@@ -202,6 +206,12 @@ namespace OnlineLibrary.Web.Controllers
         {
             var adminId = GetUserId();
             await _communityService.AssignModeratorAsync(dto, adminId);
+
+            string message = $"User {dto.UserId} has been assigned as a moderator in the community!";
+            await _notificationHub.Clients.Group($"Community_{dto.CommunityId}")
+                .SendAsync("ReceiveNotification", message);
+            Console.WriteLine($"Sending notification to group Community_{dto.CommunityId}: {message}");
+
             return Ok();
         }
 
@@ -211,6 +221,12 @@ namespace OnlineLibrary.Web.Controllers
         {
             var adminId = GetUserId();
             await _communityService.RemoveModeratorAsync(communityId, userId, adminId);
+
+            string message = $"User {userId} has been removed as a moderator from the community!";
+            await _notificationHub.Clients.Group($"Community_{communityId}")
+                .SendAsync("ReceiveNotification", message);
+            Console.WriteLine($"Sending notification to group Community_{communityId}: {message}");
+
             return Ok();
         }
 

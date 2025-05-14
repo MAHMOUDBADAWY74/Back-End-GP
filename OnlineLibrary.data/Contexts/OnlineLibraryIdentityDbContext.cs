@@ -23,6 +23,7 @@ namespace OnlineLibrary.Data.Contexts
         public DbSet<CommunityMember> CommunityMembers { get; set; }
         public DbSet<CommunityPost> CommunityPosts { get; set; }
         public DbSet<PostLike> PostLikes { get; set; }
+        public DbSet<PostUnlike> PostUnlikes { get; set; }
         public DbSet<PostComment> PostComments { get; set; }
         public DbSet<ExchangeBookRequestx> exchangeBooksRequests { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
@@ -38,7 +39,6 @@ namespace OnlineLibrary.Data.Contexts
 
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            
             modelBuilder.Entity<ExchangeBookRequestx>()
                 .HasOne(e => e.Sender)
                 .WithMany()
@@ -50,6 +50,12 @@ namespace OnlineLibrary.Data.Contexts
                 .WithMany()
                 .HasForeignKey(e => e.ReceiverUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PostUnlike>()
+                .HasOne(pu => pu.Post)
+                .WithMany()
+                .HasForeignKey(pu => pu.PostId)
+                .OnDelete(DeleteBehavior.Cascade); 
         }
     }
 }
