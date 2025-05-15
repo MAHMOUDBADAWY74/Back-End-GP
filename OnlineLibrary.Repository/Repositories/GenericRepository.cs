@@ -60,9 +60,14 @@ namespace OnlineLibrary.Repository.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IReadOnlyList<T>> GetAllWithIncludeAsync<TProperty>(Expression<Func<T, TProperty>> include)
+        public async Task<IReadOnlyList<T>> GetAllWithIncludeAsync(params Expression<Func<T, object>>[] includes)
         {
-            return await _context.Set<T>().Include(include).ToListAsync();
+            IQueryable<T> query = _context.Set<T>().AsQueryable();
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+            return await query.ToListAsync();
         }
 
         public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
