@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace OnlineLibrary.Service.CommunityService
 {
@@ -16,15 +17,18 @@ namespace OnlineLibrary.Service.CommunityService
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMemoryCache _cache;
 
         public CommunityService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _userManager = userManager;
+            _cache = cache;
         }
 
         public async Task<IEnumerable<CommunityMember>> GetCommunityMembersAsync(long communityId)
@@ -107,7 +111,9 @@ namespace OnlineLibrary.Service.CommunityService
             }
 
             var communityMembers = await _unitOfWork.Repository<CommunityMember>().GetAllAsync();
-            var communityPosts = (await _unitOfWork.Repository<CommunityPost>().GetAllAsync())
+            var communityPosts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
+                p => p.User,
+                p => p.Community))
                 .Where(p => p.CommunityId.HasValue && p.CommunityId.Value == id)
                 .ToList();
 
@@ -246,7 +252,9 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("Community not found.");
             }
 
-            var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllAsync())
+            var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
+                p => p.User,
+                p => p.Community))
                 .Where(p => p.CommunityId.HasValue && p.CommunityId.Value == communityId)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToList();
@@ -259,34 +267,43 @@ namespace OnlineLibrary.Service.CommunityService
             var postDtos = _mapper.Map<IEnumerable<CommunityPostDto>>(posts);
 
             var postIds = posts.Select(p => p.Id).ToList();
-            var allLikes = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
+
+            var likeCounts = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
                 .Where(pl => pl.PostId.HasValue && postIds.Contains(pl.PostId.Value))
-                .ToList();
+                .GroupBy(pl => pl.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count(), Likes = g.ToList() })
+                .ToDictionary(x => x.PostId, x => (x.Count, x.Likes));
 
-            var allUnlikes = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
+            var unlikeCounts = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
                 .Where(pu => pu.PostId.HasValue && postIds.Contains(pu.PostId.Value))
-                .ToList();
+                .GroupBy(pu => pu.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count(), Unlikes = g.ToList() })
+                .ToDictionary(x => x.PostId, x => (x.Count, x.Unlikes));
 
-            var allComments = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
+            var commentCounts = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
                 .Where(c => c.PostId.HasValue && postIds.Contains(c.PostId.Value))
-                .ToList();
+                .GroupBy(c => c.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.PostId, x => x.Count);
 
-            var allShares = (await _unitOfWork.Repository<PostShare>().GetAllAsync())
+            var shareCounts = (await _unitOfWork.Repository<PostShare>().GetAllAsync())
                 .Where(s => s.PostId.HasValue && postIds.Contains(s.PostId.Value))
-                .ToList();
+                .GroupBy(s => s.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.PostId, x => x.Count);
 
             foreach (var postDto in postDtos)
             {
-                postDto.IsLiked = allLikes.Any(pl => pl.PostId.HasValue && pl.PostId.Value == postDto.Id && pl.UserId == currentUserId);
-                postDto.LikeCount = allLikes.Count(pl => pl.PostId.HasValue && pl.PostId.Value == postDto.Id);
-                postDto.IsUnliked = allUnlikes.Any(pu => pu.PostId.HasValue && pu.PostId.Value == postDto.Id && pu.UserId == currentUserId);
-                postDto.UnlikeCount = allUnlikes.Count(pu => pu.PostId.HasValue && pu.PostId.Value == postDto.Id);
-                postDto.CommentCount = allComments.Count(c => c.PostId.HasValue && c.PostId.Value == postDto.Id);
-                postDto.ShareCount = allShares.Count(s => s.PostId.HasValue && s.PostId.Value == postDto.Id);
-                postDto.CommunityName = community.Name;
+                postDto.LikeCount = likeCounts.ContainsKey(postDto.Id) ? likeCounts[postDto.Id].Count : 0;
+                postDto.UnlikeCount = unlikeCounts.ContainsKey(postDto.Id) ? unlikeCounts[postDto.Id].Count : 0;
+                postDto.CommentCount = commentCounts.ContainsKey(postDto.Id) ? commentCounts[postDto.Id] : 0;
+                postDto.ShareCount = shareCounts.ContainsKey(postDto.Id) ? shareCounts[postDto.Id] : 0;
 
-                var user = await _userManager.FindByIdAsync(postDto.UserId);
-                postDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+                if (!string.IsNullOrEmpty(currentUserId))
+                {
+                    postDto.IsLiked = likeCounts.ContainsKey(postDto.Id) && likeCounts[postDto.Id].Likes.Any(l => l.UserId == currentUserId);
+                    postDto.IsUnliked = unlikeCounts.ContainsKey(postDto.Id) && unlikeCounts[postDto.Id].Unlikes.Any(u => u.UserId == currentUserId);
+                }
             }
 
             return postDtos;
@@ -297,7 +314,9 @@ namespace OnlineLibrary.Service.CommunityService
             if (string.IsNullOrEmpty(userId))
                 throw new ArgumentNullException(nameof(userId), "User ID cannot be null or empty.");
 
-            var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllAsync())
+            var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
+                p => p.User,
+                p => p.Community))
                 .Where(p => p.UserId == userId)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToList();
@@ -310,42 +329,131 @@ namespace OnlineLibrary.Service.CommunityService
             var postDtos = _mapper.Map<IEnumerable<CommunityPostDto>>(posts);
 
             var postIds = posts.Select(p => p.Id).ToList();
-            var allLikes = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
+
+            var likeCounts = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
                 .Where(pl => pl.PostId.HasValue && postIds.Contains(pl.PostId.Value))
-                .ToList();
+                .GroupBy(pl => pl.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count(), Likes = g.ToList() })
+                .ToDictionary(x => x.PostId, x => (x.Count, x.Likes));
 
-            var allUnlikes = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
+            var unlikeCounts = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
                 .Where(pu => pu.PostId.HasValue && postIds.Contains(pu.PostId.Value))
-                .ToList();
+                .GroupBy(pu => pu.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count(), Unlikes = g.ToList() })
+                .ToDictionary(x => x.PostId, x => (x.Count, x.Unlikes));
 
-            var allComments = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
+            var commentCounts = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
                 .Where(c => c.PostId.HasValue && postIds.Contains(c.PostId.Value))
-                .ToList();
+                .GroupBy(c => c.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.PostId, x => x.Count);
 
-            var allShares = (await _unitOfWork.Repository<PostShare>().GetAllAsync())
+            var shareCounts = (await _unitOfWork.Repository<PostShare>().GetAllAsync())
                 .Where(s => s.PostId.HasValue && postIds.Contains(s.PostId.Value))
-                .ToList();
-
-            var communities = await _unitOfWork.Repository<Community>().GetAllAsync();
+                .GroupBy(s => s.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.PostId, x => x.Count);
 
             foreach (var postDto in postDtos)
             {
-                postDto.IsLiked = allLikes.Any(pl => pl.PostId.HasValue && pl.PostId.Value == postDto.Id && pl.UserId == userId);
-                postDto.LikeCount = allLikes.Count(pl => pl.PostId.HasValue && pl.PostId.Value == postDto.Id);
-                postDto.IsUnliked = allUnlikes.Any(pu => pu.PostId.HasValue && pu.PostId.Value == postDto.Id && pu.UserId == userId); // تصحيح هنا
-                postDto.UnlikeCount = allUnlikes.Count(pu => pu.PostId.HasValue && pu.PostId.Value == postDto.Id);
-                postDto.CommentCount = allComments.Count(c => c.PostId.HasValue && c.PostId.Value == postDto.Id);
-                postDto.ShareCount = allShares.Count(s => s.PostId.HasValue && s.PostId.Value == postDto.Id);
+                postDto.LikeCount = likeCounts.ContainsKey(postDto.Id) ? likeCounts[postDto.Id].Count : 0;
+                postDto.UnlikeCount = unlikeCounts.ContainsKey(postDto.Id) ? unlikeCounts[postDto.Id].Count : 0;
+                postDto.CommentCount = commentCounts.ContainsKey(postDto.Id) ? commentCounts[postDto.Id] : 0;
+                postDto.ShareCount = shareCounts.ContainsKey(postDto.Id) ? shareCounts[postDto.Id] : 0;
 
-                var community = communities.FirstOrDefault(c => c.Id == postDto.CommunityId);
-                postDto.CommunityName = community?.Name ?? "Unknown";
-
-                var user = await _userManager.FindByIdAsync(postDto.UserId);
-                postDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    postDto.IsLiked = likeCounts.ContainsKey(postDto.Id) && likeCounts[postDto.Id].Likes.Any(l => l.UserId == userId);
+                    postDto.IsUnliked = unlikeCounts.ContainsKey(postDto.Id) && unlikeCounts[postDto.Id].Unlikes.Any(u => u.UserId == userId);
+                }
             }
 
             return postDtos;
         }
+
+        
+
+        public async Task<IEnumerable<CommunityPostDto>> GetAllCommunityPostsAsync(int pageNumber = 1, int pageSize = 20, string currentUserId = null)
+        {
+            var cacheKey = $"CommunityPosts_{pageNumber}_{pageSize}_{currentUserId}";
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<CommunityPostDto> cachedPosts))
+            {
+                return cachedPosts;
+            }
+
+            var allPosts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
+                p => p.User,
+                p => p.Community))
+                .Where(p => p.CommunityId.HasValue)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToList();
+
+            if (!allPosts.Any())
+            {
+                return new List<CommunityPostDto>();
+            }
+
+            var totalPosts = allPosts.Count;
+            var totalPages = (int)Math.Ceiling((double)totalPosts / pageSize);
+            pageNumber = Math.Max(1, Math.Min(pageNumber, totalPages));
+
+            var paginatedPosts = allPosts
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var postDtos = _mapper.Map<IEnumerable<CommunityPostDto>>(paginatedPosts);
+
+            var postIds = paginatedPosts.Select(p => p.Id).ToList();
+
+            var likeCounts = (await _unitOfWork.Repository<PostLike>().GetAllAsync())
+                .Where(pl => pl.PostId.HasValue && postIds.Contains(pl.PostId.Value))
+                .GroupBy(pl => pl.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count(), Likes = g.ToList() })
+                .ToDictionary(x => x.PostId, x => (x.Count, x.Likes));
+
+            var unlikeCounts = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
+                .Where(pu => pu.PostId.HasValue && postIds.Contains(pu.PostId.Value))
+                .GroupBy(pu => pu.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count(), Unlikes = g.ToList() })
+                .ToDictionary(x => x.PostId, x => (x.Count, x.Unlikes));
+
+            var commentCounts = (await _unitOfWork.Repository<PostComment>().GetAllAsync())
+                .Where(c => c.PostId.HasValue && postIds.Contains(c.PostId.Value))
+                .GroupBy(c => c.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.PostId, x => x.Count);
+
+            var shareCounts = (await _unitOfWork.Repository<PostShare>().GetAllAsync())
+                .Where(s => s.PostId.HasValue && postIds.Contains(s.PostId.Value))
+                .GroupBy(s => s.PostId.Value)
+                .Select(g => new { PostId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.PostId, x => x.Count);
+
+            foreach (var postDto in postDtos)
+            {
+                postDto.LikeCount = likeCounts.ContainsKey(postDto.Id) ? likeCounts[postDto.Id].Count : 0;
+                postDto.UnlikeCount = unlikeCounts.ContainsKey(postDto.Id) ? unlikeCounts[postDto.Id].Count : 0;
+                postDto.CommentCount = commentCounts.ContainsKey(postDto.Id) ? commentCounts[postDto.Id] : 0;
+                postDto.ShareCount = shareCounts.ContainsKey(postDto.Id) ? shareCounts[postDto.Id] : 0;
+
+                if (!string.IsNullOrEmpty(currentUserId))
+                {
+                    postDto.IsLiked = likeCounts.ContainsKey(postDto.Id) && likeCounts[postDto.Id].Likes.Any(l => l.UserId == currentUserId);
+                    postDto.IsUnliked = unlikeCounts.ContainsKey(postDto.Id) && unlikeCounts[postDto.Id].Unlikes.Any(u => u.UserId == currentUserId);
+                }
+            }
+
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+            };
+            _cache.Set(cacheKey, postDtos, cacheOptions);
+
+            return postDtos;
+        }
+
+        
 
         public async Task<PostCommentDto> AddCommentAsync(CreateCommentDto dto, string userId)
         {
@@ -417,19 +525,13 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("Post not found.");
             }
 
-            var comments = (await _unitOfWork.Repository<PostComment>().GetAllWithIncludeAsync(c => c.User))
+            var comments = (await _unitOfWork.Repository<PostComment>().GetAllWithIncludeAsync(
+                c => c.User))
                 .Where(c => c.PostId == postId)
                 .OrderBy(c => c.CreatedAt)
                 .ToList();
 
             var commentDtos = _mapper.Map<IEnumerable<PostCommentDto>>(comments);
-
-            foreach (var commentDto in commentDtos)
-            {
-                var user = await _userManager.FindByIdAsync(commentDto.UserId);
-                commentDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
-            }
-
             return commentDtos;
         }
 
@@ -455,13 +557,11 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("User has already liked this post.");
             }
 
-
             var existingUnlike = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
                 .FirstOrDefault(pu => pu.PostId == postId && pu.UserId == userId);
 
             if (existingUnlike != null)
             {
-
                 _unitOfWork.Repository<PostUnlike>().Delete(existingUnlike);
             }
 
@@ -495,7 +595,6 @@ namespace OnlineLibrary.Service.CommunityService
             if (existingLike != null)
             {
                 _unitOfWork.Repository<PostLike>().Delete(existingLike);
-
                 await AddUnlikeAsync(postId, userId);
             }
             else
@@ -508,14 +607,13 @@ namespace OnlineLibrary.Service.CommunityService
                     throw new Exception("User has already unliked this post.");
                 }
 
-
                 await AddUnlikeAsync(postId, userId);
             }
 
             await _unitOfWork.CountAsync();
         }
 
-        public async Task AddUnlikeAsync(long postId, string userId)
+        private async Task AddUnlikeAsync(long postId, string userId)
         {
             var post = await _unitOfWork.Repository<CommunityPost>().GetByIdAsync(postId);
             if (post == null)
@@ -529,7 +627,6 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("User not found.");
             }
 
-
             var existingUnlike = (await _unitOfWork.Repository<PostUnlike>().GetAllAsync())
                 .FirstOrDefault(pu => pu.PostId == postId && pu.UserId == userId);
 
@@ -538,14 +635,12 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("User has already unliked this post.");
             }
 
-            // أضيف الـ Unlike
             var unlike = new PostUnlike
             {
                 UserId = userId,
                 PostId = postId
             };
             await _unitOfWork.Repository<PostUnlike>().AddAsync(unlike);
-            await _unitOfWork.CountAsync();
         }
 
         public async Task SharePostAsync(long postId, string userId, long? sharedWithCommunityId)

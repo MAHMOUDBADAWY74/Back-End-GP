@@ -18,7 +18,8 @@ namespace OnlineLibrary.Service.CommunityService
         Task LeaveCommunityAsync(long communityId, string userId);
         Task<CommunityPostDto> CreatePostAsync(CreatePostDto dto, string userId);
         Task<IEnumerable<CommunityPostDto>> GetCommunityPostsAsync(long communityId, string currentUserId);
-        Task<IEnumerable<CommunityPostDto>> GetUserPostsAsync(string userId); // أضفنا الـ Method الجديدة
+        Task<IEnumerable<CommunityPostDto>> GetUserPostsAsync(string userId);
+        Task<IEnumerable<CommunityPostDto>> GetAllCommunityPostsAsync(int pageNumber = 1, int pageSize = 20, string currentUserId = null);
         Task<PostCommentDto> AddCommentAsync(CreateCommentDto dto, string userId);
         Task<IEnumerable<PostCommentDto>> GetPostCommentsAsync(long postId);
         Task LikePostAsync(long postId, string userId);

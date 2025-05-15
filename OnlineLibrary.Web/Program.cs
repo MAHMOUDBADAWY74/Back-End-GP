@@ -70,6 +70,8 @@ namespace OnlineLibrary.Web
                 };
             });
 
+            builder.Services.AddMemoryCache(); 
+
             builder.Services.AddApplicationServices();
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<ITokenService, TokenService>();

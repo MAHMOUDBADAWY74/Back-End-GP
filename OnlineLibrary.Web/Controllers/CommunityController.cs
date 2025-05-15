@@ -41,7 +41,8 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<CommunityDto>>> GetAllCommunities()
         {
-            var communities = await _communityService.GetAllCommunitiesAsync();
+            var userId = GetUserId();
+            var communities = await _communityService.GetAllCommunitiesAsync(userId);
             return Ok(communities);
         }
 
@@ -94,7 +95,6 @@ namespace OnlineLibrary.Web.Controllers
             var userId = GetUserId();
             var post = await _communityService.CreatePostAsync(dto, userId);
 
-            
             string message = $"A new post has been added to the community by {userId}!";
             await _notificationHub.Clients.Group($"Community_{dto.CommunityId}")
                 .SendAsync("ReceiveNotification", message);
@@ -109,6 +109,15 @@ namespace OnlineLibrary.Web.Controllers
         {
             var userId = GetUserId();
             var posts = await _communityService.GetCommunityPostsAsync(communityId, userId);
+            return Ok(posts);
+        }
+
+        [HttpGet("all-posts")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<CommunityPostDto>>> GetAllPosts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            var userId = GetUserId();
+            var posts = await _communityService.GetAllCommunityPostsAsync(pageNumber, pageSize, userId);
             return Ok(posts);
         }
 
@@ -269,7 +278,7 @@ namespace OnlineLibrary.Web.Controllers
         private async Task<string> GetPostOwnerId(long postId)
         {
             var post = await _dbContext.CommunityPosts.FindAsync(postId);
-            return post?.UserId;
+            return post?.UserId ?? string.Empty;
         }
     }
 }
