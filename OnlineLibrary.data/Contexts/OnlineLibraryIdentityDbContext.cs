@@ -27,6 +27,7 @@ namespace OnlineLibrary.Data.Contexts
         public DbSet<PostComment> PostComments { get; set; }
         public DbSet<ExchangeBookRequestx> exchangeBooksRequests { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)
@@ -55,7 +56,19 @@ namespace OnlineLibrary.Data.Contexts
                 .HasOne(pu => pu.Post)
                 .WithMany()
                 .HasForeignKey(pu => pu.PostId)
-                .OnDelete(DeleteBehavior.Cascade); 
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(cm => cm.Sender)
+                .WithMany()
+                .HasForeignKey(cm => cm.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(cm => cm.Receiver)
+                .WithMany()
+                .HasForeignKey(cm => cm.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

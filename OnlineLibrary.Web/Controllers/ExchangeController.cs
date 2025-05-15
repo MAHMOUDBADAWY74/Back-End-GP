@@ -57,7 +57,7 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(requests);
         }
 
-        [HttpPost("accept")] // تعديل المسار ليكون /api/Exchange/accept
+        [HttpPost("accept")] 
         public async Task<IActionResult> AcceptRequest([FromBody] AcceptExchangeRequestDto acceptDto)
         {
             if (!ModelState.IsValid)

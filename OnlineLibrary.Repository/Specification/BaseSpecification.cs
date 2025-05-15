@@ -14,6 +14,8 @@ namespace OnlineLibrary.Repository.Specification
         public int Take { get; private set; }
         public int Skip { get; private set; }
         public bool IsPaginated { get; private set; }
+        public Expression<Func<T, object>> OrderBy { get; private set; }
+        public Expression<Func<T, object>> OrderByDescending { get; private set; }
 
         public BaseSpecification() { }
 
@@ -29,15 +31,14 @@ namespace OnlineLibrary.Repository.Specification
             IsPaginated = true;
         }
 
+        protected void ApplyOrderBy(Expression<Func<T, object>> orderByExpression)
+        {
+            OrderBy = orderByExpression;
+        }
 
-
-
-
-
-
-
-
-
+        protected void ApplyOrderByDescending(Expression<Func<T, object>> orderByDescendingExpression)
+        {
+            OrderByDescending = orderByDescendingExpression;
+        }
     }
 }
-
