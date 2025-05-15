@@ -26,7 +26,6 @@ namespace OnlineLibrary.Web
                 WebRootPath = "wwwroot"
             });
 
-            // إضافة الخدمات
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerDocumentation();
@@ -40,7 +39,6 @@ namespace OnlineLibrary.Web
                 .AddEntityFrameworkStores<OnlineLibraryIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Configure JWT Authentication
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -57,31 +55,41 @@ namespace OnlineLibrary.Web
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
-            // تسجيل الخدمات
             builder.Services.AddApplicationServices();
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
 
-            // إضافة CORS
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", builder =>
+                options.AddPolicy("AllowFrontend", policy =>
                 {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
                 });
             });
 
-            // إضافة SignalR
             builder.Services.AddSignalR();
 
             var app = builder.Build();
 
-            // Seed Roles and Users using OnlineLibraryContextSeed
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -89,21 +97,25 @@ namespace OnlineLibrary.Web
                 var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-                // Create the database if it doesn't exist
                 context.Database.EnsureCreated();
-
-                // Seed the database with roles and users
                 await OnlineLibraryContextSeed.SeedUserAsync(userManager, roleManager);
             }
 
-            // إعداد الـ Middleware
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            // التأكد من وجود فولدرات الصور
+            app.UseHttpsRedirection();
+
+            app.UseCors("AllowFrontend");
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseStaticFiles();
+
             try
             {
                 var imagesPath = Path.Combine(app.Environment.WebRootPath, "images");
@@ -129,12 +141,6 @@ namespace OnlineLibrary.Web
             {
                 Console.WriteLine($"Failed to set up image directories: {ex.Message}");
             }
-
-            app.UseHttpsRedirection();
-            app.UseAuthentication();
-            app.UseAuthorization();
-            app.UseCors("AllowAll");
-            app.UseStaticFiles();
 
             app.MapHub<NotificationHub>("/notificationHub");
             app.MapHub<ChatHub>("/chatHub");
