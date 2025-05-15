@@ -55,7 +55,7 @@ namespace OnlineLibrary.Service.UserService
             {
                 Id = Guid.Parse(user.Id),
                 FirstName = user.firstName,
-                LastName = user.LastName, // أضفنا LastName
+                LastName = user.LastName, 
                 UserName = user.UserName,
                 Email = user.Email!,
                 Token = await _tokenService.GenerateJwtToken(user)
@@ -72,7 +72,7 @@ namespace OnlineLibrary.Service.UserService
             var appUser = new ApplicationUser
             {
                 firstName = input.FirstName,
-                LastName = input.LastName, // أضفنا LastName
+                LastName = input.LastName, 
                 Email = input.Email,
                 UserName = $"{input.FirstName}{input.LastName}"
             };
@@ -81,7 +81,6 @@ namespace OnlineLibrary.Service.UserService
             if (!result.Succeeded)
                 throw new Exception(result.Errors.Select(x => x.Description).FirstOrDefault());
 
-            // Add the "User" role
             var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
             if (!roleResult.Succeeded)
             {
@@ -93,7 +92,7 @@ namespace OnlineLibrary.Service.UserService
             {
                 Id = Guid.Parse(appUser.Id),
                 FirstName = appUser.firstName,
-                LastName = appUser.LastName, // أضفنا LastName
+                LastName = appUser.LastName, 
                 Email = appUser.Email!,
                 Token = await _tokenService.GenerateJwtToken(appUser)
             };
