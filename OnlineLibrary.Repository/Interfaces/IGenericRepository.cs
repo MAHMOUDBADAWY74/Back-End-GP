@@ -21,5 +21,7 @@ namespace OnlineLibrary.Repository.Interfaces
         Task<int> CountWithSpecAsync(ISpecification<T> spec);
         Task<IReadOnlyList<TResult>> GetDistinctAsync<TResult>(Expression<Func<T, TResult>> selector);
         Task<IReadOnlyList<T>> GetAllWithIncludeAsync<TProperty>(Expression<Func<T, TProperty>> include);
+        Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate); 
+
     }
 }

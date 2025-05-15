@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OnlineLibrary.Repository.Repositories
@@ -64,6 +63,11 @@ namespace OnlineLibrary.Repository.Repositories
         public async Task<IReadOnlyList<T>> GetAllWithIncludeAsync<TProperty>(Expression<Func<T, TProperty>> include)
         {
             return await _context.Set<T>().Include(include).ToListAsync();
+        }
+
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _context.Set<T>().FirstOrDefaultAsync(predicate);
         }
     }
 
