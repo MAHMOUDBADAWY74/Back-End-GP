@@ -77,7 +77,7 @@ namespace OnlineLibrary.Web
             });
 
             // إضافة SignalR
-            builder.Services.AddSignalR(); 
+            builder.Services.AddSignalR();
 
             var app = builder.Build();
 
@@ -136,9 +136,8 @@ namespace OnlineLibrary.Web
             app.UseCors("AllowAll");
             app.UseStaticFiles();
 
-
-            
             app.MapHub<NotificationHub>("/notificationHub");
+            app.MapHub<ChatHub>("/chatHub");
 
             app.MapControllers();
 
