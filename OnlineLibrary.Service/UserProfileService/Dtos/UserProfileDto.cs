@@ -18,7 +18,7 @@ namespace OnlineLibrary.Service.UserProfileService.Dtos
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Gender { get; set; }
-        public int? Age { get; set; }
+        public int? Age { get; set; } // Ensured Age is present
         public List<CommunityPostDto>? Posts { get; set; } 
     }
 }

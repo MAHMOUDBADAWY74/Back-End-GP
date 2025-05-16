@@ -32,15 +32,15 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(profile);
         }
 
-        [HttpGet("profile/{profileId}")]
-        public async Task<IActionResult> GetProfileById(long profileId)
+        [HttpGet("profile/{userId}")]
+        public async Task<IActionResult> GetProfileById(string userId)
         {
-            if (profileId <= 0)
+            if (string.IsNullOrEmpty(userId))
             {
-                return BadRequest("Profile ID must be a positive number.");
+                return BadRequest("User ID must not be empty.");
             }
 
-            var profile = await _userProfileService.GetProfileByIdAsync(profileId);
+            var profile = await _userProfileService.GetProfileByUserIdAsync(userId);
             return Ok(profile);
         }
 
