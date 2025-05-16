@@ -55,26 +55,33 @@ namespace OnlineLibrary.Service.UserService
             {
                 Id = Guid.Parse(user.Id),
                 FirstName = user.firstName,
-                LastName = user.LastName, 
+                LastName = user.LastName,
                 UserName = user.UserName,
                 Email = user.Email!,
+                Gender = user.Gender,
+                Age = user.DateOfBirth.HasValue ? CalculateAge(user.DateOfBirth) : null,
                 Token = await _tokenService.GenerateJwtToken(user)
             };
         }
 
         public async Task<UserDto> Register(RegisterDto input)
         {
-            var user = await _userManager.FindByEmailAsync(input.Email);
+            var userByEmail = await _userManager.FindByEmailAsync(input.Email);
+            if (userByEmail is not null)
+                throw new Exception("Email is already taken.");
 
-            if (user is not null)
-                return null;
+            var userByName = await _userManager.FindByNameAsync(input.UserName);
+            if (userByName is not null)
+                throw new Exception("Username is already taken."); 
 
             var appUser = new ApplicationUser
             {
                 firstName = input.FirstName,
-                LastName = input.LastName, 
+                LastName = input.LastName,
                 Email = input.Email,
-                UserName = $"{input.FirstName}{input.LastName}"
+                UserName = input.UserName,
+                Gender = input.Gender,
+                DateOfBirth = input.DateOfBirth
             };
 
             var result = await _userManager.CreateAsync(appUser, input.Password);
@@ -92,9 +99,11 @@ namespace OnlineLibrary.Service.UserService
             {
                 Id = Guid.Parse(appUser.Id),
                 FirstName = appUser.firstName,
-                LastName = appUser.LastName, 
+                LastName = appUser.LastName,
+                UserName = appUser.UserName,
                 Email = appUser.Email!,
-                Token = await _tokenService.GenerateJwtToken(appUser)
+                Gender = appUser.Gender,
+                Age = appUser.DateOfBirth.HasValue ? CalculateAge(appUser.DateOfBirth) : null
             };
         }
 
@@ -183,6 +192,16 @@ namespace OnlineLibrary.Service.UserService
                 throw new Exception("Invalid property name.");
 
             return property.GetValue(user)?.ToString();
+        }
+
+        private static int? CalculateAge(DateOnly? dateOfBirth)
+        {
+            if (!dateOfBirth.HasValue) return null;
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var age = today.Year - dateOfBirth.Value.Year;
+            if (dateOfBirth.Value > today.AddYears(-age)) age--;
+            return age;
         }
     }
 }

@@ -10,9 +10,9 @@ namespace OnlineLibrary.Service.UserProfileService
         Task<UserProfileDto> GetProfileAsync(string userId);
         Task<UserProfileDto> CreateProfileAsync(string userId, UserProfileCreateDto profileDto);
         Task<UserProfileDto> UpdateProfileAsync(string userId, UserProfileUpdateDto profileDto);
-        Task<UserProfileDto> GetProfileByIdAsync(long profileId);
+        Task<UserProfileDto> GetProfileByUserIdAsync(string userId);
         Task<UserProfileDto> UpdateProfilePhotoAsync(string userId, IFormFile profilePhotoUpdate);
         Task<UserProfileDto> UpdateCoverPhotoAsync(string userId, IFormFile coverPhotoUpdate);
-        Task<string> GetProfileOwnerIdAsync(long profileId);
+        
     }
 }

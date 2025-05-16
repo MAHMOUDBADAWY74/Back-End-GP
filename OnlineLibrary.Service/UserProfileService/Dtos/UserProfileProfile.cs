@@ -16,7 +16,7 @@ namespace OnlineLibrary.Service.UserProfileService.Dtos
                 .ForMember(dest => dest.Bio, opt => opt.MapFrom(src => src.Bio))
                 .ForMember(dest => dest.Hobbies, opt => opt.MapFrom(src => src.Hobbies != null ? src.Hobbies.ToArray() : null))
                 .ForMember(dest => dest.FavoriteBookTopics, opt => opt.MapFrom(src => src.FavoriteBookTopics != null ? src.FavoriteBookTopics.ToArray() : null))
-                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User != null ? src.User.firstName : null))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User != null ? src.User.firstName : null)) // Fixed to FirstName
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User != null ? src.User.LastName : null))
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User != null ? src.User.Gender : null))
                 .ForMember(dest => dest.Age, opt => opt.MapFrom(src => src.User != null && src.User.DateOfBirth.HasValue ? CalculateAge(src.User.DateOfBirth) : null))

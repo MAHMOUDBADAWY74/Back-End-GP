@@ -6,7 +6,9 @@ using OnlineLibrary.Service.HandleResponse;
 
 namespace OnlineLibrary.Web.Controllers
 {
-    public class AccountController : BaseController
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AccountController : ControllerBase
     {
         private readonly IUserService _userService;
 
@@ -14,86 +16,81 @@ namespace OnlineLibrary.Web.Controllers
         {
             _userService = userService;
         }
-
-        [HttpPost]
-        public async Task<ActionResult<UserDto>> Login(LoginDto input)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto input)
         {
-            var user = await _userService.Login(input);
-            if (user == null)
-                return BadRequest(new UserException(400, "Email Does Not Found"));
-            return Ok(user);
+            var result = await _userService.Login(input);
+            if (result == null)
+            {
+                return BadRequest(new
+                {
+                    errors = new[] { "Invalid login attempt." },
+                    details = (string)null,
+                    statusCode = 400,
+                    message = "Bad Request"
+                });
+            }
+            return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<UserDto>> Register(RegisterDto input)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto input)
         {
-            Console.WriteLine($"Registering user: Email={input.Email}, FirstName={input.FirstName}, LastName={input.LastName}");
-            var user = await _userService.Register(input);
-            if (user == null)
-                return BadRequest(new UserException(400, "Email Already Exists"));
-            Console.WriteLine($"User registered: FirstName={user.FirstName}, LastName={user.LastName}");
-            return Ok(user);
+            try
+            {
+                var result = await _userService.Register(input);
+                if (result == null)
+                {
+                    return BadRequest(new
+                    {
+                        errors = new[] { "Email is already taken." },
+                        details = (string)null,
+                        statusCode = 400,
+                        message = "Bad Request"
+                    });
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    errors = new[] { ex.Message },
+                    details = (string)null,
+                    statusCode = 400,
+                    message = "Bad Request"
+                });
+            }
         }
 
-        [HttpPost]
-        public async Task<ActionResult> VerifyEmail(VerifyEmailDto input)
-        {
-            var result = await _userService.VerifyEmail(input);
-            if (!result)
-                return BadRequest(new UserException(400, "Email Verification Failed"));
+        
 
-            return Ok(new { Message = "Email Verified Successfully" });
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var result = await _userService.Logout();
+            return Ok(new { success = result });
         }
 
-        [HttpPost]
-        public async Task<ActionResult> ForgotPassword(ForgotPasswordDto input)
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto input)
         {
             var result = await _userService.ForgotPassword(input);
-            if (!result)
-                return BadRequest(new UserException(400, "Email Not Found"));
-
-            return Ok(new { Message = "Password Reset Token Sent to Email" });
+            return Ok(new { success = result });
         }
 
-        [HttpPost]
-        public async Task<ActionResult> ResetPassword(ResetPasswordDto input)
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto input)
         {
             var result = await _userService.ResetPassword(input);
-            if (!result)
-                return BadRequest(new UserException(400, "Password Reset Failed"));
-
-            return Ok(new { Message = "Done" });
+            return Ok(new { success = result });
         }
 
-        [HttpPost]
-        public async Task<ActionResult> Logout()
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto input)
         {
-            var logoutSuccess = await _userService.Logout();
-            if (!logoutSuccess)
-            {
-                return BadRequest("Logout failed");
-            }
-            return Ok("Successfully logged out");
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RequestEditUser([FromBody] RequestEditUserDto request)
-        {
-            var result = await _userService.RequestEditUser(request.UserId, request.FieldName, request.NewValue);
-            if (!result)
-                return BadRequest("Failed to request edit.");
-
-            return Ok("Edit request submitted.");
-        }
-
-        [HttpPost("request-delete")]
-        public async Task<IActionResult> RequestDeleteUser([FromBody] RequestDeleteUserDto request)
-        {
-            var result = await _userService.RequestDeleteUser(request.UserId);
-            if (!result)
-                return BadRequest("Failed to request delete.");
-
-            return Ok("Delete request submitted.");
+            var result = await _userService.VerifyEmail(input);
+            return Ok(new { success = result });
         }
     }
 }

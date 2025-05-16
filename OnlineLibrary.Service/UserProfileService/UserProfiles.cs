@@ -129,31 +129,9 @@ namespace OnlineLibrary.Service.UserProfileService
             return profileDto;
         }
 
-        public async Task<UserProfileDto> GetProfileByIdAsync(long profileId)
+        public async Task<UserProfileDto> GetProfileByUserIdAsync(string userId)
         {
-            if (profileId <= 0)
-                throw new ArgumentException("Profile ID must be a positive number.", nameof(profileId));
-
-            var profile = await _unitOfWork.Repository<UserProfile>().GetAllWithSpecAsync(
-                new UserProfileByIdSpecification(profileId));
-
-            var userProfile = profile.FirstOrDefault();
-            if (userProfile == null)
-            {
-                throw new Exception($"Profile with ID {profileId} not found.");
-            }
-
-            if (userProfile.User == null)
-            {
-                userProfile.User = await _userManager.FindByIdAsync(userProfile.UserId);
-            }
-
-            var profileDto = _mapper.Map<UserProfileDto>(userProfile);
-
-            var posts = await _communityService.GetUserPostsAsync(userProfile.UserId);
-            profileDto.Posts = posts.ToList();
-
-            return profileDto;
+            return await GetProfileAsync(userId);
         }
 
         public async Task<UserProfileDto> UpdateProfileAsync(string userId, UserProfileUpdateDto profileDto)
@@ -277,22 +255,6 @@ namespace OnlineLibrary.Service.UserProfileService
             profile.User = await _userManager.FindByIdAsync(userId);
 
             return _mapper.Map<UserProfileDto>(profile);
-        }
-
-        public async Task<string> GetProfileOwnerIdAsync(long profileId)
-        {
-            if (profileId <= 0)
-                throw new ArgumentException("Profile ID must be a positive number.", nameof(profileId));
-
-            var profile = (await _unitOfWork.Repository<UserProfile>().GetAllWithSpecAsync(
-                new UserProfileByIdSpecification(profileId))).FirstOrDefault();
-
-            if (profile == null)
-            {
-                throw new Exception("Profile not found");
-            }
-
-            return profile.UserId;
         }
     }
 }
