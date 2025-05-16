@@ -69,5 +69,41 @@ namespace OnlineLibrary.Web.Controllers
             var profile = await _userProfileService.UpdateProfileAsync(userId, profileDto);
             return Ok(profile);
         }
+
+        [HttpPut("profile-photo")]
+        public async Task<IActionResult> UpdateProfilePhoto([FromForm] ProfilePhotoUpdateDto photoDto)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            if (photoDto.ProfilePhotoUpdate == null || photoDto.ProfilePhotoUpdate.Length == 0)
+            {
+                return BadRequest("Profile photo is required.");
+            }
+
+            var profile = await _userProfileService.UpdateProfilePhotoAsync(userId, photoDto.ProfilePhotoUpdate);
+            return Ok(profile);
+        }
+
+        [HttpPut("cover-photo")]
+        public async Task<IActionResult> UpdateCoverPhoto([FromForm] CoverPhotoUpdateDto photoDto)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            if (photoDto.CoverPhotoUpdate == null || photoDto.CoverPhotoUpdate.Length == 0)
+            {
+                return BadRequest("Cover photo is required.");
+            }
+
+            var profile = await _userProfileService.UpdateCoverPhotoAsync(userId, photoDto.CoverPhotoUpdate);
+            return Ok(profile);
+        }
     }
 }

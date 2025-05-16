@@ -70,12 +70,13 @@ namespace OnlineLibrary.Web
                 };
             });
 
-            builder.Services.AddMemoryCache(); 
+            builder.Services.AddMemoryCache();
 
             builder.Services.AddApplicationServices();
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
+            builder.Services.AddHttpContextAccessor(); 
 
             builder.Services.AddCors(options =>
             {
