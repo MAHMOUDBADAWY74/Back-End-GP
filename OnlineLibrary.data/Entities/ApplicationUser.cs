@@ -17,6 +17,8 @@ namespace OnlineLibrary.Data.Entities
         public DateOnly? DateOfBirth { get; set; }
 
         public String? Gender { get; set; }
+        public bool IsBlocked { get; set; } 
+        public virtual ICollection<CommunityModerator>? CommunityModerators { get; set; }
 
     }
 }

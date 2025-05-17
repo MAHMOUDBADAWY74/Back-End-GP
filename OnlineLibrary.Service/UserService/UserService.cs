@@ -2,9 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
+using OnlineLibrary.Service.ExchangeRequestService.DTOS;
 using OnlineLibrary.Service.TokenService;
 using OnlineLibrary.Service.UserService.Dtos;
+using OnlineLibrary.Service.AdminService.Dtos;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -51,6 +54,9 @@ namespace OnlineLibrary.Service.UserService
             if (!result.Succeeded)
                 throw new Exception("User Not Found");
 
+            if (user.IsBlocked)
+                throw new Exception("User is blocked and cannot log in.");
+
             return new UserDto
             {
                 Id = Guid.Parse(user.Id),
@@ -72,7 +78,7 @@ namespace OnlineLibrary.Service.UserService
 
             var userByName = await _userManager.FindByNameAsync(input.UserName);
             if (userByName is not null)
-                throw new Exception("Username is already taken."); 
+                throw new Exception("Username is already taken.");
 
             var appUser = new ApplicationUser
             {
@@ -81,7 +87,8 @@ namespace OnlineLibrary.Service.UserService
                 Email = input.Email,
                 UserName = input.UserName,
                 Gender = input.Gender,
-                DateOfBirth = input.DateOfBirth
+                DateOfBirth = input.DateOfBirth,
+                IsBlocked = false
             };
 
             var result = await _userManager.CreateAsync(appUser, input.Password);
@@ -183,6 +190,33 @@ namespace OnlineLibrary.Service.UserService
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<List<AdminUserDto>> GetAllUsersForAdminAsync()
+        {
+            var users = await _context.Users
+                .Include(u => u.CommunityModerators)
+                .ThenInclude(cm => cm.Community)
+                .ToListAsync();
+
+            var userDtos = new List<AdminUserDto>();
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                var role = roles.FirstOrDefault() ?? "User";
+
+                userDtos.Add(new AdminUserDto
+                {
+                    Id = user.Id,
+                    Username = user.UserName,
+                    Email = user.Email,
+                    Role = role,
+                    IsBlocked = user.IsBlocked,
+                    CommunityId = user.CommunityModerators.Any() ? user.CommunityModerators.First().CommunityId : (long?)null
+                });
+            }
+
+            return userDtos;
         }
 
         private string GetPropertyValue(ApplicationUser user, string propertyName)

@@ -16,21 +16,35 @@ namespace OnlineLibrary.Web.Controllers
         {
             _userService = userService;
         }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto input)
         {
-            var result = await _userService.Login(input);
-            if (result == null)
+            try
+            {
+                var result = await _userService.Login(input);
+                if (result == null)
+                {
+                    return BadRequest(new
+                    {
+                        errors = new[] { "Invalid login attempt." },
+                        details = (string)null,
+                        statusCode = 400,
+                        message = "Bad Request"
+                    });
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new
                 {
-                    errors = new[] { "Invalid login attempt." },
+                    errors = new[] { ex.Message }, 
                     details = (string)null,
                     statusCode = 400,
                     message = "Bad Request"
                 });
             }
-            return Ok(result);
         }
 
         [HttpPost("register")]
@@ -62,8 +76,6 @@ namespace OnlineLibrary.Web.Controllers
                 });
             }
         }
-
-        
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()

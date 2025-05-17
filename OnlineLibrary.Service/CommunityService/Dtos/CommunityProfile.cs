@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using OnlineLibrary.Data.Entities;
+using OnlineLibrary.Service.AdminService.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,10 +27,21 @@ namespace OnlineLibrary.Service.CommunityService.Dtos
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.firstName} {src.User.LastName}" : "Unknown"))
                 .ForMember(dest => dest.CommunityName, opt => opt.MapFrom(src => src.Community != null ? src.Community.Name : "Unknown"))
                 .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(src => src.Likes != null ? src.Likes.Count : 0))
+                .ForMember(dest => dest.UnlikeCount, opt => opt.Ignore())
                 .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments != null ? src.Comments.Count : 0))
                 .ForMember(dest => dest.ShareCount, opt => opt.MapFrom(src => src.Shares != null ? src.Shares.Count : 0))
-                .ForMember(dest => dest.UnlikeCount, opt => opt.Ignore()) 
-                .ForMember(dest => dest.IsUnliked, opt => opt.Ignore());  
+                .ForMember(dest => dest.IsLiked, opt => opt.Ignore())
+                .ForMember(dest => dest.IsUnliked, opt => opt.Ignore());
+
+                
+
+
+            CreateMap<CommunityPost, CommunityPostSummaryDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.CommunityId, opt => opt.MapFrom(src => src.CommunityId))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
 
             CreateMap<PostComment, PostCommentDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.firstName} {src.User.LastName}" : "Unknown"));
@@ -45,3 +57,4 @@ namespace OnlineLibrary.Service.CommunityService.Dtos
         }
     }
 }
+

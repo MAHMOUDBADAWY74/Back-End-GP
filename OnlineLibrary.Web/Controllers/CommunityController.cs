@@ -50,6 +50,15 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize]
         public async Task<ActionResult<CommunityDto>> GetCommunity(long id)
         {
+            
+            var visit = new Visit
+            {
+                VisitDate = DateTime.UtcNow,
+                UserId = User.Identity.IsAuthenticated ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : null
+            };
+            _dbContext.Visits.Add(visit);
+            await _dbContext.SaveChangesAsync();
+
             var community = await _communityService.GetCommunityByIdAsync(id);
             if (community == null)
                 return NotFound();
