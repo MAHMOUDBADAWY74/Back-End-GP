@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Design;
 using Store.Web.Extentions;
 using OnlineLibrary.Web.Hubs;
+using OnlineLibrary.Service.CommunityService.Dtos;
 
 namespace OnlineLibrary.Web
 {
@@ -26,6 +27,7 @@ namespace OnlineLibrary.Web
                 WebRootPath = "wwwroot"
             });
 
+            // Add services to the container
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerDocumentation();
@@ -76,7 +78,7 @@ namespace OnlineLibrary.Web
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
-            builder.Services.AddHttpContextAccessor(); 
+            builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddCors(options =>
             {
@@ -91,8 +93,12 @@ namespace OnlineLibrary.Web
 
             builder.Services.AddSignalR();
 
+            // Register AutoMapper
+            builder.Services.AddAutoMapper(typeof(CommunityProfile).Assembly);
+
             var app = builder.Build();
 
+            // Database seeding
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -128,16 +134,20 @@ namespace OnlineLibrary.Web
                     Console.WriteLine("Created wwwroot/images directory.");
                 }
 
-                var testFilePath = Path.Combine(imagesPath, "test.txt");
-                await File.WriteAllTextAsync(testFilePath, "Test write access");
-                Console.WriteLine("Write access to wwwroot/images is working.");
-                File.Delete(testFilePath);
-
                 var postImagesPath = Path.Combine(app.Environment.WebRootPath, "post-images");
                 if (!Directory.Exists(postImagesPath))
                 {
                     Directory.CreateDirectory(postImagesPath);
                     Console.WriteLine("Created wwwroot/post-images directory.");
+                }
+
+                // Test write access once
+                var testFilePath = Path.Combine(imagesPath, "test.txt");
+                if (!File.Exists(testFilePath))
+                {
+                    await File.WriteAllTextAsync(testFilePath, "Test write access");
+                    Console.WriteLine("Write access to wwwroot/images is working.");
+                    File.Delete(testFilePath);
                 }
             }
             catch (Exception ex)

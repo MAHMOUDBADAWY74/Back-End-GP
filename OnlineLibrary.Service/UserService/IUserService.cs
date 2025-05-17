@@ -1,4 +1,5 @@
 ﻿using OnlineLibrary.Service.UserService.Dtos;
+using OnlineLibrary.Service.AdminService.Dtos;
 using System;
 using System.Threading.Tasks;
 
@@ -14,5 +15,6 @@ namespace OnlineLibrary.Service.UserService
         Task<bool> Logout();
         Task<bool> RequestEditUser(string userId, string fieldName, string newValue);
         Task<bool> RequestDeleteUser(string userId);
+        Task<List<AdminUserDto>> GetAllUsersForAdminAsync();
     }
 }

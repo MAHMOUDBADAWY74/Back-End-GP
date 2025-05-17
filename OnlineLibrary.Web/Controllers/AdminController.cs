@@ -2,7 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary.Service.AdminService;
 using OnlineLibrary.Service.AdminService.Dtos;
+using OnlineLibrary.Service.CommunityService;
 using OnlineLibrary.Service.HandleResponse;
+using OnlineLibrary.Service.UserService;
+using System.Threading.Tasks;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -12,10 +15,14 @@ namespace OnlineLibrary.Web.Controllers
     public class AdminController : BaseController
     {
         private readonly IAdminService _adminService;
+        private readonly IUserService _userService;
+        private readonly ICommunityService _communityService;
 
-        public AdminController(IAdminService adminService)
+        public AdminController(IAdminService adminService, IUserService userService, ICommunityService communityService)
         {
             _adminService = adminService;
+            _userService = userService;
+            _communityService = communityService;
         }
 
         [HttpPut("users/{userId}/roles")]
@@ -76,6 +83,81 @@ namespace OnlineLibrary.Web.Controllers
                     return BadRequest(new UserException(400, "Failed to reject change."));
 
                 return Ok(new { Message = "Change rejected successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new UserException(400, ex.Message));
+            }
+        }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersForAdminAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new UserException(400, ex.Message));
+            }
+        }
+
+        [HttpGet("posts/summary")]
+        public async Task<IActionResult> GetAllCommunityPostsSummary([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var posts = await _communityService.GetAllCommunityPostsSummaryAsync(pageNumber, pageSize);
+                return Ok(new
+                {
+                    pageNumber,
+                    pageSize,
+                    posts
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new UserException(400, ex.Message));
+            }
+        }
+
+        [HttpGet("community-posts-count")]
+        public async Task<IActionResult> GetCommunityPostsCount()
+        {
+            try
+            {
+                var communityPostsCount = await _communityService.GetCommunityPostsCountAsync();
+                return Ok(communityPostsCount);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new UserException(400, ex.Message));
+            }
+        }
+
+        [HttpGet("communities")]
+        public async Task<IActionResult> GetAllCommunitiesSummary()
+        {
+            try
+            {
+                var communities = await _communityService.GetAllCommunitiesSummaryAsync();
+                return Ok(communities);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new UserException(400, ex.Message));
+            }
+        }
+
+        [HttpGet("visits/monthly/{year}")]
+        public async Task<IActionResult> GetMonthlyVisits(int year)
+        {
+            try
+            {
+                var monthlyVisits = await _communityService.GetMonthlyVisitsAsync(year);
+                return Ok(monthlyVisits);
             }
             catch (Exception ex)
             {

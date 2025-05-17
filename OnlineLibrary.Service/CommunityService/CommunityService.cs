@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Repository.Interfaces;
 using OnlineLibrary.Service.CommunityService.Dtos;
+using OnlineLibrary.Service.AdminService.Dtos;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -371,8 +372,6 @@ namespace OnlineLibrary.Service.CommunityService
             return postDtos;
         }
 
-        
-
         public async Task<IEnumerable<CommunityPostDto>> GetAllCommunityPostsAsync(int pageNumber = 1, int pageSize = 20, string currentUserId = null)
         {
             var cacheKey = $"CommunityPosts_{pageNumber}_{pageSize}_{currentUserId}";
@@ -453,7 +452,53 @@ namespace OnlineLibrary.Service.CommunityService
             return postDtos;
         }
 
-        
+        public async Task<IEnumerable<CommunityPostSummaryDto>> GetAllCommunityPostsSummaryAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            var cacheKey = $"CommunityPostsSummary_{pageNumber}_{pageSize}";
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<CommunityPostSummaryDto> cachedPosts))
+            {
+                return cachedPosts;
+            }
+
+            var allPosts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
+                p => p.User,
+                p => p.Community))
+                .Where(p => p.CommunityId.HasValue)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToList();
+
+            if (!allPosts.Any())
+            {
+                return new List<CommunityPostSummaryDto>();
+            }
+
+            var totalPosts = allPosts.Count;
+            var totalPages = (int)Math.Ceiling((double)totalPosts / pageSize);
+            pageNumber = Math.Max(1, Math.Min(pageNumber, totalPages));
+
+            var paginatedPosts = allPosts
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            
+            var postDtos = paginatedPosts.Select(p => new CommunityPostSummaryDto
+            {
+                Id = p.Id.ToString(), 
+                Content = p.Content,
+                CommunityId = p.CommunityId, 
+                CreatedAt = p.CreatedAt.ToString("yyyy-MM-dd"),
+                UserId = p.UserId 
+            }).ToList();
+
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+            };
+            _cache.Set(cacheKey, postDtos, cacheOptions);
+
+            return postDtos;
+        }
 
         public async Task<PostCommentDto> AddCommentAsync(CreateCommentDto dto, string userId)
         {
@@ -976,6 +1021,56 @@ namespace OnlineLibrary.Service.CommunityService
                 _unitOfWork.Repository<CommunityMember>().Delete(targetMember);
                 await _unitOfWork.CountAsync();
             }
+        }
+        public async Task<IEnumerable<CommunityPostsCountDto>> GetCommunityPostsCountAsync()
+        {
+            var communities = await _unitOfWork.Repository<Community>().GetAllAsync();
+            var posts = await _unitOfWork.Repository<CommunityPost>().GetAllAsync();
+
+            var communityPostsCount = communities.Select(c => new CommunityPostsCountDto
+            {
+                CommunityID = c.Id.ToString(),
+                PostCount = posts.Count(p => p.CommunityId.HasValue && p.CommunityId.Value == c.Id)
+            }).ToList();
+
+            return communityPostsCount;
+        }
+        public async Task<IEnumerable<CommunitySummaryDto>> GetAllCommunitiesSummaryAsync()
+        {
+            var communities = await _unitOfWork.Repository<Community>().GetAllAsync();
+
+            var communitySummaries = communities.Select(c => new CommunitySummaryDto
+            {
+                Id = c.Id.ToString(),
+                Name = c.Name,
+                Description = c.Description ?? "No description available"
+            }).ToList();
+
+            return communitySummaries;
+        }
+        public async Task<MonthlyVisitsDto> GetMonthlyVisitsAsync(int year)
+        {
+            var visits = await _unitOfWork.Repository<Visit>().GetAllAsync();
+            var yearVisits = visits.Where(v => v.VisitDate.Year == year).ToList();
+
+            var monthlyVisits = new MonthlyVisitsDto
+            {
+                Year = year.ToString(),
+                Jan = yearVisits.Count(v => v.VisitDate.Month == 1),
+                Feb = yearVisits.Count(v => v.VisitDate.Month == 2),
+                Mar = yearVisits.Count(v => v.VisitDate.Month == 3),
+                April = yearVisits.Count(v => v.VisitDate.Month == 4),
+                May = yearVisits.Count(v => v.VisitDate.Month == 5),
+                June = yearVisits.Count(v => v.VisitDate.Month == 6),
+                July = yearVisits.Count(v => v.VisitDate.Month == 7),
+                Aug = yearVisits.Count(v => v.VisitDate.Month == 8),
+                Sept = yearVisits.Count(v => v.VisitDate.Month == 9),
+                Oct = yearVisits.Count(v => v.VisitDate.Month == 10),
+                Nov = yearVisits.Count(v => v.VisitDate.Month == 11),
+                Dec = yearVisits.Count(v => v.VisitDate.Month == 12)
+            };
+
+            return monthlyVisits;
         }
 
         public async Task<bool> UnbanUserAsync(long communityId, string moderatorId, string userIdToUnban)
