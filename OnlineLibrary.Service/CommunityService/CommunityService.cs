@@ -255,6 +255,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
                 p => p.User,
+                p => p.User.UserProfile, 
                 p => p.Community))
                 .Where(p => p.CommunityId.HasValue && p.CommunityId.Value == communityId)
                 .OrderByDescending(p => p.CreatedAt)
@@ -317,6 +318,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
                 p => p.User,
+                p => p.User.UserProfile, 
                 p => p.Community))
                 .Where(p => p.UserId == userId)
                 .OrderByDescending(p => p.CreatedAt)
@@ -382,6 +384,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             var allPosts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
                 p => p.User,
+                p => p.User.UserProfile, 
                 p => p.Community))
                 .Where(p => p.CommunityId.HasValue)
                 .OrderByDescending(p => p.CreatedAt)
@@ -481,14 +484,13 @@ namespace OnlineLibrary.Service.CommunityService
                 .Take(pageSize)
                 .ToList();
 
-            
             var postDtos = paginatedPosts.Select(p => new CommunityPostSummaryDto
             {
-                Id = p.Id.ToString(), 
+                Id = p.Id.ToString(),
                 Content = p.Content,
-                CommunityId = p.CommunityId, 
+                CommunityId = p.CommunityId,
                 CreatedAt = p.CreatedAt.ToString("yyyy-MM-dd"),
-                UserId = p.UserId 
+                UserId = p.UserId
             }).ToList();
 
             var cacheOptions = new MemoryCacheEntryOptions
@@ -571,7 +573,8 @@ namespace OnlineLibrary.Service.CommunityService
             }
 
             var comments = (await _unitOfWork.Repository<PostComment>().GetAllWithIncludeAsync(
-                c => c.User))
+                c => c.User,
+                c => c.User.UserProfile)) 
                 .Where(c => c.PostId == postId)
                 .OrderBy(c => c.CreatedAt)
                 .ToList();
@@ -1022,6 +1025,7 @@ namespace OnlineLibrary.Service.CommunityService
                 await _unitOfWork.CountAsync();
             }
         }
+
         public async Task<IEnumerable<CommunityPostsCountDto>> GetCommunityPostsCountAsync()
         {
             var communities = await _unitOfWork.Repository<Community>().GetAllAsync();
@@ -1035,6 +1039,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             return communityPostsCount;
         }
+
         public async Task<IEnumerable<CommunitySummaryDto>> GetAllCommunitiesSummaryAsync()
         {
             var communities = await _unitOfWork.Repository<Community>().GetAllAsync();
@@ -1048,6 +1053,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             return communitySummaries;
         }
+
         public async Task<MonthlyVisitsDto> GetMonthlyVisitsAsync(int year)
         {
             var visits = await _unitOfWork.Repository<Visit>().GetAllAsync();
