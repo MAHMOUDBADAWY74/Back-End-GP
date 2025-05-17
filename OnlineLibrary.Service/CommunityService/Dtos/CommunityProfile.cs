@@ -31,10 +31,8 @@ namespace OnlineLibrary.Service.CommunityService.Dtos
                 .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments != null ? src.Comments.Count : 0))
                 .ForMember(dest => dest.ShareCount, opt => opt.MapFrom(src => src.Shares != null ? src.Shares.Count : 0))
                 .ForMember(dest => dest.IsLiked, opt => opt.Ignore())
-                .ForMember(dest => dest.IsUnliked, opt => opt.Ignore());
-
-                
-
+                .ForMember(dest => dest.IsUnliked, opt => opt.Ignore())
+                .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User != null && src.User.UserProfile != null ? src.User.UserProfile.ProfilePhoto : null));
 
             CreateMap<CommunityPost, CommunityPostSummaryDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
@@ -44,7 +42,8 @@ namespace OnlineLibrary.Service.CommunityService.Dtos
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
 
             CreateMap<PostComment, PostCommentDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.firstName} {src.User.LastName}" : "Unknown"));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.firstName} {src.User.LastName}" : "Unknown"))
+                .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User != null && src.User.UserProfile != null ? src.User.UserProfile.ProfilePhoto : null));
 
             CreateMap<PostShare, PostShareDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? $"{src.User.firstName} {src.User.LastName}" : "Unknown"))

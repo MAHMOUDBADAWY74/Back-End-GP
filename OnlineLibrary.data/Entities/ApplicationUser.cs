@@ -19,6 +19,8 @@ namespace OnlineLibrary.Data.Entities
         public String? Gender { get; set; }
         public bool IsBlocked { get; set; } 
         public virtual ICollection<CommunityModerator>? CommunityModerators { get; set; }
+        public virtual UserProfile? UserProfile { get; set; } 
+
 
     }
 }

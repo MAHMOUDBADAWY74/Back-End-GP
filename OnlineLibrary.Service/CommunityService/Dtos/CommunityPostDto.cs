@@ -23,5 +23,7 @@ namespace OnlineLibrary.Service.CommunityService.Dtos
         public bool IsUnliked { get; set; }  
         public int CommentCount { get; set; }
         public int ShareCount { get; set; }
+        public string ProfilePicture { get; set; } 
+
     }
 }
