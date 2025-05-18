@@ -3,14 +3,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Service.CommunityService;
 using OnlineLibrary.Service.CommunityService.Dtos;
 using OnlineLibrary.Web.Hubs;
+using OnlineLibrary.Web.Hubs.Dtos;
+using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -37,6 +40,18 @@ namespace OnlineLibrary.Web.Controllers
 
         private string GetUserId() => _userManager.GetUserId(User);
 
+        private async Task<(string Username, string ProfilePicture)> GetUserDetails(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            var userProfile = await _dbContext.UserProfiles
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+
+            string username = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+            string profilePicture = userProfile?.ProfilePhoto ?? "default_profile.jpg";
+
+            return (username, profilePicture);
+        }
+
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<IEnumerable<CommunityDto>>> GetAllCommunities()
@@ -50,7 +65,6 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize]
         public async Task<ActionResult<CommunityDto>> GetCommunity(long id)
         {
-            
             var visit = new Visit
             {
                 VisitDate = DateTime.UtcNow,
@@ -104,10 +118,19 @@ namespace OnlineLibrary.Web.Controllers
             var userId = GetUserId();
             var post = await _communityService.CreatePostAsync(dto, userId);
 
-            string message = $"A new post has been added to the community by {userId}!";
-            await _notificationHub.Clients.Group($"Community_{dto.CommunityId}")
-                .SendAsync("ReceiveNotification", message);
-            Console.WriteLine($"Sending notification to group Community_{dto.CommunityId}: {message}");
+            var (username, profilePicture) = await GetUserDetails(userId);
+            var notification = new NotificationDto
+            {
+                UserId = userId,
+                Username = username,
+                ProfilePicture = profilePicture,
+                Text = $"{username} added a new post to the community!",
+                Time = DateTime.UtcNow
+            };
+
+            await _notificationHub.Clients.GroupExcept($"Community_{dto.CommunityId}", userId)
+                .SendAsync("ReceiveNotification", notification);
+            Console.WriteLine($"Sending notification to group Community_{dto.CommunityId}: {notification.Text}");
 
             return Ok(post);
         }
@@ -143,9 +166,22 @@ namespace OnlineLibrary.Web.Controllers
 
             await _communityService.LikePostAsync(postId, userId);
 
-            string message = $"User {userId} liked your post!";
-            await _notificationHub.Clients.User(postOwnerId).SendAsync("ReceiveNotification", message);
-            Console.WriteLine($"Sending notification to {postOwnerId}: {message}");
+            if (userId != postOwnerId) 
+            {
+                var (username, profilePicture) = await GetUserDetails(userId);
+                var notification = new NotificationDto
+                {
+                    UserId = userId,
+                    Username = username,
+                    ProfilePicture = profilePicture,
+                    Text = $"{username} liked your post!",
+                    Time = DateTime.UtcNow
+                };
+
+                await _notificationHub.Clients.User(postOwnerId)
+                    .SendAsync("ReceiveNotification", notification);
+                Console.WriteLine($"Sending notification to {postOwnerId}: {notification.Text}");
+            }
 
             return Ok();
         }
@@ -163,9 +199,22 @@ namespace OnlineLibrary.Web.Controllers
 
             await _communityService.UnlikePostAsync(postId, userId);
 
-            string message = $"User {userId} unliked your post!";
-            await _notificationHub.Clients.User(postOwnerId).SendAsync("ReceiveNotification", message);
-            Console.WriteLine($"Sending notification to {postOwnerId}: {message}");
+            if (userId != postOwnerId) 
+            {
+                var (username, profilePicture) = await GetUserDetails(userId);
+                var notification = new NotificationDto
+                {
+                    UserId = userId,
+                    Username = username,
+                    ProfilePicture = profilePicture,
+                    Text = $"{username} unliked your post!",
+                    Time = DateTime.UtcNow
+                };
+
+                await _notificationHub.Clients.User(postOwnerId)
+                    .SendAsync("ReceiveNotification", notification);
+                Console.WriteLine($"Sending notification to {postOwnerId}: {notification.Text}");
+            }
 
             return Ok();
         }
@@ -183,9 +232,22 @@ namespace OnlineLibrary.Web.Controllers
 
             var comment = await _communityService.AddCommentAsync(dto, userId);
 
-            string message = $"User {userId} commented on your post!";
-            await _notificationHub.Clients.User(postOwnerId).SendAsync("ReceiveNotification", message);
-            Console.WriteLine($"Sending notification to {postOwnerId}: {message}");
+            if (userId != postOwnerId) 
+            {
+                var (username, profilePicture) = await GetUserDetails(userId);
+                var notification = new NotificationDto
+                {
+                    UserId = userId,
+                    Username = username,
+                    ProfilePicture = profilePicture,
+                    Text = $"{username} commented on your post!",
+                    Time = DateTime.UtcNow
+                };
+
+                await _notificationHub.Clients.User(postOwnerId)
+                    .SendAsync("ReceiveNotification", notification);
+                Console.WriteLine($"Sending notification to {postOwnerId}: {notification.Text}");
+            }
 
             return Ok(comment);
         }
@@ -211,9 +273,22 @@ namespace OnlineLibrary.Web.Controllers
 
             await _communityService.SharePostAsync(postId, userId, communityId);
 
-            string message = $"User {userId} shared your post!";
-            await _notificationHub.Clients.User(postOwnerId).SendAsync("ReceiveNotification", message);
-            Console.WriteLine($"Sending notification to {postOwnerId}: {message}");
+            if (userId != postOwnerId) 
+            {
+                var (username, profilePicture) = await GetUserDetails(userId);
+                var notification = new NotificationDto
+                {
+                    UserId = userId,
+                    Username = username,
+                    ProfilePicture = profilePicture,
+                    Text = $"{username} shared your post!",
+                    Time = DateTime.UtcNow
+                };
+
+                await _notificationHub.Clients.User(postOwnerId)
+                    .SendAsync("ReceiveNotification", notification);
+                Console.WriteLine($"Sending notification to {postOwnerId}: {notification.Text}");
+            }
 
             return Ok();
         }
@@ -225,10 +300,19 @@ namespace OnlineLibrary.Web.Controllers
             var adminId = GetUserId();
             await _communityService.AssignModeratorAsync(dto, adminId);
 
-            string message = $"User {dto.UserId} has been assigned as a moderator in the community!";
-            await _notificationHub.Clients.Group($"Community_{dto.CommunityId}")
-                .SendAsync("ReceiveNotification", message);
-            Console.WriteLine($"Sending notification to group Community_{dto.CommunityId}: {message}");
+            var (username, profilePicture) = await GetUserDetails(dto.UserId);
+            var notification = new NotificationDto
+            {
+                UserId = adminId,
+                Username = username,
+                ProfilePicture = profilePicture,
+                Text = $"{username} has been assigned as a moderator in the community!",
+                Time = DateTime.UtcNow
+            };
+
+            await _notificationHub.Clients.GroupExcept($"Community_{dto.CommunityId}", adminId)
+                .SendAsync("ReceiveNotification", notification);
+            Console.WriteLine($"Sending notification to group Community_{dto.CommunityId}: {notification.Text}");
 
             return Ok();
         }
@@ -240,10 +324,19 @@ namespace OnlineLibrary.Web.Controllers
             var adminId = GetUserId();
             await _communityService.RemoveModeratorAsync(communityId, userId, adminId);
 
-            string message = $"User {userId} has been removed as a moderator from the community!";
-            await _notificationHub.Clients.Group($"Community_{communityId}")
-                .SendAsync("ReceiveNotification", message);
-            Console.WriteLine($"Sending notification to group Community_{communityId}: {message}");
+            var (username, profilePicture) = await GetUserDetails(userId);
+            var notification = new NotificationDto
+            {
+                UserId = adminId,
+                Username = username,
+                ProfilePicture = profilePicture,
+                Text = $"{username} has been removed as a moderator from the community!",
+                Time = DateTime.UtcNow
+            };
+
+            await _notificationHub.Clients.GroupExcept($"Community_{communityId}", adminId)
+                .SendAsync("ReceiveNotification", notification);
+            Console.WriteLine($"Sending notification to group Community_{communityId}: {notification.Text}");
 
             return Ok();
         }
