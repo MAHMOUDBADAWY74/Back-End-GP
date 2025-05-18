@@ -561,6 +561,10 @@ namespace OnlineLibrary.Service.CommunityService
 
             var commentDto = _mapper.Map<PostCommentDto>(comment);
             commentDto.UserName = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+
+            var userProfile = await _unitOfWork.Repository<UserProfile>().GetFirstOrDefaultAsync(up => up.UserId == userId);
+            commentDto.ProfilePicture = userProfile?.ProfilePhoto ?? "default_profile.jpg";
+
             return commentDto;
         }
 

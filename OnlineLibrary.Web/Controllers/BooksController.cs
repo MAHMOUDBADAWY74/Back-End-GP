@@ -1,9 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using OnlineLibrary.Data.Contexts;
+using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Service.BookService;
 using OnlineLibrary.Service.BookService.Dtos;
-using OnlineLibrary.Web.Hubs; 
+using OnlineLibrary.Web.Hubs;
+using OnlineLibrary.Web.Hubs.Dtos;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OnlineLibrary.Web.Controllers
@@ -14,13 +21,33 @@ namespace OnlineLibrary.Web.Controllers
     {
         private readonly IBookService _bookService;
         private readonly IHubContext<NotificationHub> _notificationHub;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly OnlineLibraryIdentityDbContext _dbContext;
 
         public BooksController(
             IBookService bookService,
-            IHubContext<NotificationHub> notificationHub) 
+            IHubContext<NotificationHub> notificationHub,
+            UserManager<ApplicationUser> userManager,
+            OnlineLibraryIdentityDbContext dbContext)
         {
             _bookService = bookService;
             _notificationHub = notificationHub;
+            _userManager = userManager;
+            _dbContext = dbContext;
+        }
+
+        private string GetUserId() => _userManager.GetUserId(User);
+
+        private async Task<(string Username, string ProfilePicture)> GetUserDetails(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            var userProfile = await _dbContext.UserProfiles
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+
+            string username = user != null ? $"{user.firstName} {user.LastName}" : "Unknown";
+            string profilePicture = userProfile?.ProfilePhoto ?? "default_profile.jpg";
+
+            return (username, profilePicture);
         }
 
         [HttpGet]
@@ -51,10 +78,20 @@ namespace OnlineLibrary.Web.Controllers
 
             await _bookService.AddBookAsync(addBookDetailsDto);
 
-            
-            string message = $"A new book '{addBookDetailsDto.Title}' has been added!";
-            await _notificationHub.Clients.All.SendAsync("ReceiveNotification", message);
-            Console.WriteLine($"Sending notification to all users: {message}");
+            var userId = GetUserId();
+            var (username, profilePicture) = await GetUserDetails(userId);
+            var notification = new NotificationDto
+            {
+                UserId = userId,
+                Username = username,
+                ProfilePicture = profilePicture,
+                Text = $"A new book '{addBookDetailsDto.Title}' has been added by {username}!",
+                Time = DateTime.UtcNow
+            };
+
+            await _notificationHub.Clients.GroupExcept("AllUsers", userId)
+                .SendAsync("ReceiveNotification", notification);
+            Console.WriteLine($"Sending notification to all users: {notification.Text}");
 
             return Ok("Book added successfully.");
         }
