@@ -19,6 +19,7 @@ namespace OnlineLibrary.Service.UserService
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ITokenService _tokenService;
         private readonly OnlineLibraryIdentityDbContext _context;
+        private readonly string _baseImageUrl; 
 
         public UserService(
             SignInManager<ApplicationUser> signInManager,
@@ -45,7 +46,10 @@ namespace OnlineLibrary.Service.UserService
 
         public async Task<UserDto> Login(LoginDto input)
         {
-            var user = await _userManager.FindByEmailAsync(input.Email);
+            
+            var user = await _userManager.Users
+                .Include(u => u.UserProfile) 
+                .FirstOrDefaultAsync(u => u.Email == input.Email);
             if (user == null)
                 return null;
 
@@ -57,16 +61,24 @@ namespace OnlineLibrary.Service.UserService
             if (user.IsBlocked)
                 throw new Exception("User is blocked and cannot log in.");
 
+            
+            string? profilePicture = null;
+            if (user.UserProfile?.ProfilePhoto != null)
+            {
+                profilePicture = $"{_baseImageUrl}{user.UserProfile.ProfilePhoto}";
+            }
+
             return new UserDto
             {
                 Id = Guid.Parse(user.Id),
                 FirstName = user.firstName,
                 LastName = user.LastName,
                 UserName = user.UserName,
-                Email = user.Email!,
+                Email = user.Email,
                 Gender = user.Gender,
                 Age = user.DateOfBirth.HasValue ? CalculateAge(user.DateOfBirth) : null,
-                Token = await _tokenService.GenerateJwtToken(user)
+                Token = await _tokenService.GenerateJwtToken(user),
+                ProfilePicture = profilePicture 
             };
         }
 
@@ -108,9 +120,10 @@ namespace OnlineLibrary.Service.UserService
                 FirstName = appUser.firstName,
                 LastName = appUser.LastName,
                 UserName = appUser.UserName,
-                Email = appUser.Email!,
+                Email = appUser.Email,
                 Gender = appUser.Gender,
-                Age = appUser.DateOfBirth.HasValue ? CalculateAge(appUser.DateOfBirth) : null
+                Age = appUser.DateOfBirth.HasValue ? CalculateAge(appUser.DateOfBirth) : null,
+                ProfilePicture = null 
             };
         }
 
