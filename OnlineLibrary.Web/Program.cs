@@ -140,6 +140,19 @@ namespace OnlineLibrary.Web
                     Directory.CreateDirectory(postImagesPath);
                     Console.WriteLine("Created wwwroot/post-images directory.");
                 }
+                var profilePhotosPath = Path.Combine(app.Environment.WebRootPath, "profile-photos");
+                if (!Directory.Exists(profilePhotosPath))
+                {
+                    Directory.CreateDirectory(profilePhotosPath);
+                    Console.WriteLine("Created wwwroot/profile-photos directory.");
+                }
+
+                var coverProfilePhotosPath = Path.Combine(app.Environment.WebRootPath, "cover-profile-photos");
+                if (!Directory.Exists(coverProfilePhotosPath))
+                {
+                    Directory.CreateDirectory(coverProfilePhotosPath);
+                    Console.WriteLine("Created wwwroot/cover-profile-photos directory.");
+                }
 
                 // Test write access once
                 var testFilePath = Path.Combine(imagesPath, "test.txt");
