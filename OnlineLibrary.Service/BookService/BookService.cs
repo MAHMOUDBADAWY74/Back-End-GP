@@ -164,6 +164,30 @@ namespace OnlineLibrary.Service.BookService
             _unitOfWork.Repository<BooksDatum>().Update(book);
             await _unitOfWork.CountAsync();
         }
+        public async Task<IEnumerable<BookSearchResultDto>> SearchBooksAsync(string term)
+        {
+            term = term?.ToLower() ?? "";
+
+            var result = await _unitOfWork.Repository<BooksDatum>().GetQueryable()
+                .Where(b =>
+                    (!string.IsNullOrEmpty(b.Title) && b.Title.ToLower().Contains(term)) ||
+                    (!string.IsNullOrEmpty(b.Author) && b.Author.ToLower().Contains(term))
+                )
+                .Select(b => new BookSearchResultDto
+                {
+                    Id = b.Id ?? 0,
+                    Title = b.Title,
+                    Cover = b.Cover,
+                    Author = b.Author,
+                    Category = b.Category
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
+
+
 
         public async Task<PaginatedBookDto> GetAllBooksAsyncUsingPaginated(int pageIndex, int pageSize)
         {

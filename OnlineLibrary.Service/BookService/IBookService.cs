@@ -12,6 +12,8 @@ namespace OnlineLibrary.Service.BookService
         Task AddBookAsync(AddBookDetailsDto addBookDetailsDto);
         Task DeleteBookAsync(long id);
         Task RemoveBookCoverAsync(long id);
+        Task<IEnumerable<BookSearchResultDto>> SearchBooksAsync(string term);
+
         Task<IReadOnlyList<GetAllBookDetailsDto>> GetAllBooksAsync();
         Task<BookDetailsDto> GetBookByIdAsync(long id);
         Task UpdateBookAsync(BookDetailsDto bookDetailsDto);

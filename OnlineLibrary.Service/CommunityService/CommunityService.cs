@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
 
 namespace OnlineLibrary.Service.CommunityService
 {
@@ -47,6 +48,14 @@ namespace OnlineLibrary.Service.CommunityService
 
         public async Task<CommunityDto> CreateCommunityAsync(CreateCommunityDto dto, string adminId)
         {
+            // تحقق من الاسم قبل الإضافة
+            var exists = (await _unitOfWork.Repository<Community>().GetAllAsync())
+                .Any(c => c.Name == dto.Name);
+            if (exists)
+            {
+                throw new Exception("Community name already exists.");
+            }
+
             var admin = await _userManager.FindByIdAsync(adminId);
             if (admin == null)
             {
@@ -61,19 +70,26 @@ namespace OnlineLibrary.Service.CommunityService
                 PostCount = 0
             };
 
-            await _unitOfWork.Repository<Community>().AddAsync(community);
-            await _unitOfWork.CountAsync();
-
-            var member = new CommunityMember
+            try
             {
-                UserId = adminId,
-                CommunityId = community.Id,
-                IsModerator = true,
-                JoinedDate = DateTime.UtcNow
-            };
+                await _unitOfWork.Repository<Community>().AddAsync(community);
+                await _unitOfWork.CountAsync();
 
-            await _unitOfWork.Repository<CommunityMember>().AddAsync(member);
-            await _unitOfWork.CountAsync();
+                var member = new CommunityMember
+                {
+                    UserId = adminId,
+                    CommunityId = community.Id,
+                    IsModerator = true,
+                    JoinedDate = DateTime.UtcNow
+                };
+
+                await _unitOfWork.Repository<CommunityMember>().AddAsync(member);
+                await _unitOfWork.CountAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("IX_Community_Name") == true)
+            {
+                throw new Exception("Community name already exists.");
+            }
 
             var communityDto = _mapper.Map<CommunityDto>(community);
             communityDto.MemberCount = 1;
@@ -81,6 +97,7 @@ namespace OnlineLibrary.Service.CommunityService
             communityDto.AdminName = $"{admin.firstName} {admin.LastName}";
             return communityDto;
         }
+
 
         public async Task<IEnumerable<CommunityDto>> GetAllCommunitiesAsync(string userId = null, bool isAdmin = false)
         {
@@ -742,32 +759,75 @@ namespace OnlineLibrary.Service.CommunityService
         {
             var community = await _unitOfWork.Repository<Community>().GetByIdAsync(dto.CommunityId);
             if (community == null)
-            {
                 throw new Exception("Community not found.");
-            }
 
             if (community.AdminId != adminId)
-            {
                 throw new Exception("Only the admin can assign moderators.");
-            }
 
+            var existingModerator = (await _unitOfWork.Repository<CommunityModerator>().GetAllAsync())
+                .FirstOrDefault(m => m.CommunityId == dto.CommunityId && m.ApplicationUserId == dto.UserId);
+
+            if (existingModerator != null)
+                throw new Exception("User is already a moderator.");
+
+            var moderator = new CommunityModerator
+            {
+                ApplicationUserId = dto.UserId,
+                CommunityId = dto.CommunityId,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Repository<CommunityModerator>().AddAsync(moderator);
+
+            
             var member = (await _unitOfWork.Repository<CommunityMember>().GetAllAsync())
                 .FirstOrDefault(m => m.CommunityId == dto.CommunityId && m.UserId == dto.UserId);
 
-            if (member == null)
+            if (member != null && member.IsModerator != true)
             {
-                throw new Exception("User is not a member of this community.");
+                member.IsModerator = true;
+                _unitOfWork.Repository<CommunityMember>().Update(member);
             }
 
-            if (member.IsModerator == true)
-            {
-                throw new Exception("User is already a moderator.");
-            }
-
-            member.IsModerator = true;
-            _unitOfWork.Repository<CommunityMember>().Update(member);
             await _unitOfWork.CountAsync();
         }
+
+
+        public async Task<IEnumerable<ModeratorDto>> GetAllModeratorsAsync()
+        {
+           
+            var moderators = await _unitOfWork.Repository<CommunityModerator>().GetAllWithIncludeAsync(
+                m => m.ApplicationUser,
+                m => m.Community,
+                m => m.ApplicationUser.UserProfile
+            );
+
+            
+            var allUsers = _userManager.Users.ToList();
+            var moderatorUserIds = new List<string>();
+            foreach (var user in allUsers)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles.Contains("Moderator"))
+                    moderatorUserIds.Add(user.Id);
+            }
+
+            
+            var filteredModerators = moderators
+                .Where(m => moderatorUserIds.Contains(m.ApplicationUserId))
+                .ToList();
+
+            var result = filteredModerators.Select(m => new ModeratorDto
+            {
+                UserId = m.ApplicationUserId,
+                FullName = $"{m.ApplicationUser?.firstName} {m.ApplicationUser?.LastName}".Trim(),
+                ProfilePicture = m.ApplicationUser?.UserProfile?.ProfilePhoto ?? null,
+                CommunityId = m.CommunityId,
+                CommunityName = m.Community?.Name ?? ""
+            }).ToList();
+
+            return result;
+        }
+
 
         public async Task RemoveModeratorAsync(long communityId, string userId, string adminId)
         {

@@ -182,6 +182,28 @@ namespace OnlineLibrary.Service.UserService
 
             return true;
         }
+        public async Task<IEnumerable<UserSearchResultDto>> SearchUsersAsync(string term)
+        {
+            term = term?.ToLower() ?? "";
+
+            var result = await _userManager.Users
+                .Include(u => u.UserProfile)
+                .Where(u =>
+                    (!string.IsNullOrEmpty(u.UserName) && u.UserName.ToLower().Contains(term)) ||
+                    (!string.IsNullOrEmpty(u.firstName) && u.firstName.ToLower().Contains(term)) ||
+                    (!string.IsNullOrEmpty(u.LastName) && u.LastName.ToLower().Contains(term))
+                )
+                .Select(u => new UserSearchResultDto
+                {
+                    Id = u.Id,
+                    UserName = $"{u.firstName} {u.LastName}".Trim(),
+                    ProfilePicture = u.UserProfile != null ? u.UserProfile.ProfilePhoto : null
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
 
         public async Task<bool> RequestDeleteUser(string userId)
         {
@@ -209,14 +231,26 @@ namespace OnlineLibrary.Service.UserService
         {
             var users = await _context.Users
                 .Include(u => u.CommunityModerators)
-                .ThenInclude(cm => cm.Community)
+                    .ThenInclude(cm => cm.Community)
+                .Include(u => u.UserProfile)
                 .ToListAsync();
+
+            // جلب كل الـ Roles مرة واحدة
+            var userIds = users.Select(u => u.Id).ToList();
+            var userRoles = await _context.UserRoles
+                .Where(ur => userIds.Contains(ur.UserId))
+                .ToListAsync();
+
+            var rolesDict = await _context.Roles.ToDictionaryAsync(r => r.Id, r => r.Name);
 
             var userDtos = new List<AdminUserDto>();
             foreach (var user in users)
             {
-                var roles = await _userManager.GetRolesAsync(user);
-                var role = roles.FirstOrDefault() ?? "User";
+                // جلب أول Role للمستخدم (أو User لو مفيش)
+                var roleId = userRoles.FirstOrDefault(ur => ur.UserId == user.Id)?.RoleId;
+                var role = roleId != null && rolesDict.ContainsKey(roleId) ? rolesDict[roleId] : "User";
+
+                var firstCommunity = user.CommunityModerators?.FirstOrDefault()?.Community;
 
                 userDtos.Add(new AdminUserDto
                 {
@@ -225,12 +259,17 @@ namespace OnlineLibrary.Service.UserService
                     Email = user.Email,
                     Role = role,
                     IsBlocked = user.IsBlocked,
-                    CommunityId = user.CommunityModerators.Any() ? user.CommunityModerators.First().CommunityId : (long?)null
+                    CommunityId = user.CommunityModerators.Any() ? user.CommunityModerators.First().CommunityId : (long?)null,
+                    ProfilePicture = user.UserProfile?.ProfilePhoto,
+                    CommunityName = firstCommunity?.Name
                 });
             }
 
             return userDtos;
         }
+
+
+
 
         private string GetPropertyValue(ApplicationUser user, string propertyName)
         {

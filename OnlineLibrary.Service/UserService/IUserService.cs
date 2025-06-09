@@ -15,6 +15,7 @@ namespace OnlineLibrary.Service.UserService
         Task<bool> Logout();
         Task<bool> RequestEditUser(string userId, string fieldName, string newValue);
         Task<bool> RequestDeleteUser(string userId);
+        Task<IEnumerable<UserSearchResultDto>> SearchUsersAsync(string term);
         Task<List<AdminUserDto>> GetAllUsersForAdminAsync();
     }
 }

@@ -11,6 +11,8 @@ namespace OnlineLibrary.Repository.Interfaces
     public interface IGenericRepository<T> where T : BaseEntity
     {
         Task<T> GetByIdAsync(long id);
+        IQueryable<T> GetQueryable();
+
         Task<IReadOnlyList<T>> GetAllAsync();
         Task AddAsync(T entity);
         void Update(T entity);

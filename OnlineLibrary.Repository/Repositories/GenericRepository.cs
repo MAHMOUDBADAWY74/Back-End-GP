@@ -14,10 +14,12 @@ namespace OnlineLibrary.Repository.Repositories
     public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
         private readonly OnlineLibraryIdentityDbContext _context;
+        private readonly DbSet<T> _dbSet;
 
         public GenericRepository(OnlineLibraryIdentityDbContext context)
         {
             _context = context;
+            _dbSet = _context.Set<T>();
         }
 
         public async Task AddAsync(T entity)
@@ -58,6 +60,10 @@ namespace OnlineLibrary.Repository.Repositories
                 .Select(selector)
                 .Distinct()
                 .ToListAsync();
+        }
+        public IQueryable<T> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
         }
 
         public async Task<IReadOnlyList<T>> GetAllWithIncludeAsync(params Expression<Func<T, object>>[] includes)

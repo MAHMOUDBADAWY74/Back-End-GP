@@ -89,9 +89,17 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<ActionResult<CommunityDto>> CreateCommunity(CreateCommunityDto dto)
         {
             var userId = GetUserId();
-            var community = await _communityService.CreateCommunityAsync(dto, userId);
-            return Ok(community);
+            try
+            {
+                var community = await _communityService.CreateCommunityAsync(dto, userId);
+                return Ok(community);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
+
 
         [HttpPost("{communityId}/join")]
         [Authorize]
@@ -316,6 +324,15 @@ namespace OnlineLibrary.Web.Controllers
 
             return Ok();
         }
+        [HttpGet("moderators/all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllModerators()
+        {
+            var moderators = await _communityService.GetAllModeratorsAsync();
+            return Ok(moderators);
+        }
+
+
 
         [HttpPost("moderators/remove")]
         [Authorize(Roles = "Admin")]

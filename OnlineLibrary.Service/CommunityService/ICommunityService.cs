@@ -31,6 +31,10 @@ namespace OnlineLibrary.Service.CommunityService
         Task UnlikePostAsync(long postId, string userId);
         Task SharePostAsync(long postId, string userId, long? sharedWithCommunityId);
         Task AssignModeratorAsync(AssignModeratorDto dto, string adminId);
+        
+        Task<IEnumerable<ModeratorDto>> GetAllModeratorsAsync();
+
+
         Task RemoveModeratorAsync(long communityId, string userId, string adminId);
         Task DeletePostAsync(long postId, string requesterId);
         Task DeleteCommentAsync(long commentId, string requesterId);

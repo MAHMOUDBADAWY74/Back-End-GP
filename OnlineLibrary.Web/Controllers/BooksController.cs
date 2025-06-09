@@ -66,6 +66,12 @@ namespace OnlineLibrary.Web.Controllers
             if (book == null) return NotFound();
             return Ok(book);
         }
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchBooks([FromQuery] string term)
+        {
+            var books = await _bookService.SearchBooksAsync(term);
+            return Ok(books);
+        }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]

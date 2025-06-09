@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace OnlineLibrary.Data.Entities
 {
-    public class CommunityModerator
+    public class CommunityModerator : BaseEntity
+
     {
         [Key]
         public long Id { get; set; }
@@ -20,6 +21,6 @@ namespace OnlineLibrary.Data.Entities
         public long CommunityId { get; set; }
         public Community Community { get; set; }
 
-        public DateTime JoinedAt { get; set; } // Optional: Track when the user became a moderator
+        
     }
 }

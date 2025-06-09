@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineLibrary.Data.Contexts;
 
@@ -11,9 +12,11 @@ using OnlineLibrary.Data.Contexts;
 namespace OnlineLibrary.Data.Migrations
 {
     [DbContext(typeof(OnlineLibraryIdentityDbContext))]
-    partial class OnlineLibraryIdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250609110413_AddCreatedAtToCommunityModerator")]
+    partial class AddCreatedAtToCommunityModerator
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -364,8 +367,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("PostCount")
                         .HasColumnType("int");
@@ -425,6 +427,9 @@ namespace OnlineLibrary.Data.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("JoinedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");

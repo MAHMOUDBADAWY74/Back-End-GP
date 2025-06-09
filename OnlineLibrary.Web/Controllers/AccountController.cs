@@ -76,6 +76,13 @@ namespace OnlineLibrary.Web.Controllers
                 });
             }
         }
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string term)
+        {
+            var users = await _userService.SearchUsersAsync(term);
+            return Ok(users);
+        }
+
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
