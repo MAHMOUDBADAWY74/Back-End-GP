@@ -23,6 +23,7 @@ namespace OnlineLibrary.Data.Entities
         [ForeignKey(nameof(CommunityId))]
         public Community Community { get; set; }
         public DateTime? UpdatedAt { get; set; } 
+        //
 
     }
 }
