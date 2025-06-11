@@ -22,6 +22,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\cover-profile-photos\" />
+    <Folder Include="wwwroot\community-images\" />
     <Folder Include="wwwroot\profile-photos\" />
     <Folder Include="wwwroot\post-images\" />
   </ItemGroup>

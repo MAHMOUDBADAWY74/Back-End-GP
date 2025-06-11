@@ -28,7 +28,8 @@ namespace OnlineLibrary.Data.Contexts
         public DbSet<ExchangeBookRequestx> exchangeBooksRequests { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
-        public DbSet<Visit> Visits { get; set; } 
+        public DbSet<Visit> Visits { get; set; }
+        public DbSet<CommunityImage> CommunityImages { get; set; }
 
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)

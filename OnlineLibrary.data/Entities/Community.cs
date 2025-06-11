@@ -25,6 +25,8 @@ namespace OnlineLibrary.Data.Entities
        
         public ICollection<CommunityPost>? Posts { get; set; }
         public ICollection<PostShare>? PostShares { get; set; }
+        public virtual ICollection<CommunityImage>? Images { get; set; }
+
         public virtual ICollection<CommunityModerator>? Moderators { get; set; }
 
     }

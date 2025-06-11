@@ -12,8 +12,8 @@ using OnlineLibrary.Data.Contexts;
 namespace OnlineLibrary.Data.Migrations
 {
     [DbContext(typeof(OnlineLibraryIdentityDbContext))]
-    [Migration("20250514153930_AddPostUnlikeTable")]
-    partial class AddPostUnlikeTable
+    [Migration("20250611051319_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -223,6 +223,9 @@ namespace OnlineLibrary.Data.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
@@ -309,6 +312,41 @@ namespace OnlineLibrary.Data.Migrations
                     b.ToTable("BooksData");
                 });
 
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.ChatMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("ChatMessages");
+                });
+
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Community", b =>
                 {
                     b.Property<long>("Id")
@@ -329,7 +367,8 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("PostCount")
                         .HasColumnType("int");
@@ -339,6 +378,35 @@ namespace OnlineLibrary.Data.Migrations
                     b.HasIndex("AdminId");
 
                     b.ToTable("Communities");
+                });
+
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityImage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("CommunityId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityId");
+
+                    b.ToTable("CommunityImages");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityMember", b =>
@@ -371,6 +439,33 @@ namespace OnlineLibrary.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("CommunityMembers");
+                });
+
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityModerator", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<long>("CommunityId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("CommunityId");
+
+                    b.ToTable("CommunityModerator");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityPost", b =>
@@ -753,9 +848,11 @@ namespace OnlineLibrary.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FavoriteBookTopics")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Hobbies")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastUpdated")
@@ -769,9 +866,34 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("UserProfiles");
+                });
+
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.Visit", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("VisitDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Visits");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Wishlist", b =>
@@ -865,6 +987,25 @@ namespace OnlineLibrary.Data.Migrations
                     b.Navigation("AppUser");
                 });
 
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("OnlineLibrary.Data.Entities.ApplicationUser", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OnlineLibrary.Data.Entities.ApplicationUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Community", b =>
                 {
                     b.HasOne("OnlineLibrary.Data.Entities.ApplicationUser", "Admin")
@@ -872,6 +1013,17 @@ namespace OnlineLibrary.Data.Migrations
                         .HasForeignKey("AdminId");
 
                     b.Navigation("Admin");
+                });
+
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityImage", b =>
+                {
+                    b.HasOne("OnlineLibrary.Data.Entities.Community", "Community")
+                        .WithMany("Images")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Community");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityMember", b =>
@@ -887,6 +1039,25 @@ namespace OnlineLibrary.Data.Migrations
                     b.Navigation("Community");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityModerator", b =>
+                {
+                    b.HasOne("OnlineLibrary.Data.Entities.ApplicationUser", "ApplicationUser")
+                        .WithMany("CommunityModerators")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineLibrary.Data.Entities.Community", "Community")
+                        .WithMany("Moderators")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Community");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityPost", b =>
@@ -1062,8 +1233,8 @@ namespace OnlineLibrary.Data.Migrations
             modelBuilder.Entity("OnlineLibrary.Data.Entities.UserProfile", b =>
                 {
                     b.HasOne("OnlineLibrary.Data.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithOne("UserProfile")
+                        .HasForeignKey("OnlineLibrary.Data.Entities.UserProfile", "UserId");
 
                     b.Navigation("User");
                 });
@@ -1087,11 +1258,19 @@ namespace OnlineLibrary.Data.Migrations
                 {
                     b.Navigation("Address")
                         .IsRequired();
+
+                    b.Navigation("CommunityModerators");
+
+                    b.Navigation("UserProfile");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Community", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("Members");
+
+                    b.Navigation("Moderators");
 
                     b.Navigation("PostShares");
 

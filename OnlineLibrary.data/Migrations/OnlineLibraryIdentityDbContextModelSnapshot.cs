@@ -377,6 +377,35 @@ namespace OnlineLibrary.Data.Migrations
                     b.ToTable("Communities");
                 });
 
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityImage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("CommunityId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityId");
+
+                    b.ToTable("CommunityImages");
+                });
+
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityMember", b =>
                 {
                     b.Property<long>("Id")
@@ -983,6 +1012,17 @@ namespace OnlineLibrary.Data.Migrations
                     b.Navigation("Admin");
                 });
 
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityImage", b =>
+                {
+                    b.HasOne("OnlineLibrary.Data.Entities.Community", "Community")
+                        .WithMany("Images")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Community");
+                });
+
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityMember", b =>
                 {
                     b.HasOne("OnlineLibrary.Data.Entities.Community", "Community")
@@ -1223,6 +1263,8 @@ namespace OnlineLibrary.Data.Migrations
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.Community", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("Members");
 
                     b.Navigation("Moderators");

@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Store.Web.Extentions;
 using OnlineLibrary.Web.Hubs;
 using OnlineLibrary.Service.CommunityService.Dtos;
+using OnlineLibrary.Service.ContentModerationService;
 
 namespace OnlineLibrary.Web
 {
@@ -26,7 +27,7 @@ namespace OnlineLibrary.Web
             {
                 WebRootPath = "wwwroot"
             });
-
+            builder.Services.AddLogging(logging => logging.AddConsole());
             // Add services to the container
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -79,6 +80,9 @@ namespace OnlineLibrary.Web
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddTransient<IDesignTimeDbContextFactory<OnlineLibraryIdentityDbContext>, OnlineLibraryIdentityDbContextFactory>();
             builder.Services.AddHttpContextAccessor();
+
+            // تسجيل خدمة مراقبة المحتوى
+            builder.Services.AddScoped<IContentModerationService, ContentModerationService>();
 
             builder.Services.AddCors(options =>
             {
@@ -153,7 +157,12 @@ namespace OnlineLibrary.Web
                     Directory.CreateDirectory(coverProfilePhotosPath);
                     Console.WriteLine("Created wwwroot/cover-profile-photos directory.");
                 }
-
+                var communityimagesPath = Path.Combine(app.Environment.WebRootPath, "community-images");
+                if (!Directory.Exists(communityimagesPath))
+                {
+                    Directory.CreateDirectory(communityimagesPath);
+                    Console.WriteLine("Created wwwroot/community-images directory.");
+                }
                 // Test write access once
                 var testFilePath = Path.Combine(imagesPath, "test.txt");
                 if (!File.Exists(testFilePath))

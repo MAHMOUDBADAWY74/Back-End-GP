@@ -10,6 +10,7 @@ using OnlineLibrary.Service.CommunityService;
 using OnlineLibrary.Service.CommunityService.Dtos;
 using OnlineLibrary.Web.Hubs;
 using OnlineLibrary.Web.Hubs.Dtos;
+using OnlineLibrary.Service.ContentModerationService;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -25,17 +26,20 @@ namespace OnlineLibrary.Web.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHubContext<NotificationHub> _notificationHub;
         private readonly OnlineLibraryIdentityDbContext _dbContext;
+        private readonly IContentModerationService _contentModerationService;
 
         public CommunityController(
             ICommunityService communityService,
             UserManager<ApplicationUser> userManager,
             IHubContext<NotificationHub> notificationHub,
-            OnlineLibraryIdentityDbContext dbContext)
+            OnlineLibraryIdentityDbContext dbContext,
+            IContentModerationService contentModerationService)
         {
             _communityService = communityService;
             _userManager = userManager;
             _notificationHub = notificationHub;
             _dbContext = dbContext;
+            _contentModerationService = contentModerationService;
         }
 
         private string GetUserId() => _userManager.GetUserId(User);
@@ -100,7 +104,6 @@ namespace OnlineLibrary.Web.Controllers
             }
         }
 
-
         [HttpPost("{communityId}/join")]
         [Authorize]
         public async Task<IActionResult> JoinCommunity(long communityId)
@@ -123,6 +126,18 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize(Roles = "Sender,Admin,Moderator,User")]
         public async Task<ActionResult<CommunityPostDto>> CreatePost([FromForm] CreatePostDto dto)
         {
+            // فحص المحتوى باستخدام خدمة مراقبة المحتوى
+            var moderationResult = await _contentModerationService.ModerateTextAsync(dto.Content);
+            if (!moderationResult.IsAppropriate)
+            {
+                return BadRequest(new
+                {
+                    error = "تم رفض المنشور بسبب محتوى غير مناسب",
+                    details = moderationResult.ReasonMessage,
+                    category = moderationResult.Category
+                });
+            }
+
             var userId = GetUserId();
             var post = await _communityService.CreatePostAsync(dto, userId);
 
@@ -138,7 +153,6 @@ namespace OnlineLibrary.Web.Controllers
 
             await _notificationHub.Clients.GroupExcept($"Community_{dto.CommunityId}", userId)
                 .SendAsync("ReceiveNotification", notification);
-            Console.WriteLine($"Sending notification to group Community_{dto.CommunityId}: {notification.Text}");
 
             return Ok(post);
         }
@@ -174,7 +188,7 @@ namespace OnlineLibrary.Web.Controllers
 
             await _communityService.LikePostAsync(postId, userId);
 
-            if (userId != postOwnerId) 
+            if (userId != postOwnerId)
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
                 var notification = new NotificationDto
@@ -207,7 +221,7 @@ namespace OnlineLibrary.Web.Controllers
 
             await _communityService.UnlikePostAsync(postId, userId);
 
-            if (userId != postOwnerId) 
+            if (userId != postOwnerId)
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
                 var notification = new NotificationDto
@@ -231,6 +245,19 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize]
         public async Task<ActionResult<PostCommentDto>> AddComment(CreateCommentDto dto)
         {
+            // فحص محتوى التعليق باستخدام خدمة مراقبة المحتوى
+            var moderationResult = await _contentModerationService.ModerateTextAsync(dto.Content);
+
+            if (!moderationResult.IsAppropriate)
+            {
+                return BadRequest(new
+                {
+                    error = "تم رفض التعليق بسبب محتوى غير مناسب",
+                    details = moderationResult.ReasonMessage,
+                    category = moderationResult.Category
+                });
+            }
+
             var userId = GetUserId();
             string postOwnerId = await GetPostOwnerId(dto.PostId);
             if (string.IsNullOrEmpty(postOwnerId))
@@ -240,22 +267,18 @@ namespace OnlineLibrary.Web.Controllers
 
             var comment = await _communityService.AddCommentAsync(dto, userId);
 
-            if (userId != postOwnerId) 
+            var (username, profilePicture) = await GetUserDetails(userId);
+            var notification = new NotificationDto
             {
-                var (username, profilePicture) = await GetUserDetails(userId);
-                var notification = new NotificationDto
-                {
-                    UserId = userId,
-                    Username = username,
-                    ProfilePicture = profilePicture,
-                    Text = $"{username} commented on your post!",
-                    Time = DateTime.UtcNow
-                };
+                UserId = userId,
+                Username = username,
+                ProfilePicture = profilePicture,
+                Text = $"{username} commented on your post!",
+                Time = DateTime.UtcNow
+            };
 
-                await _notificationHub.Clients.User(postOwnerId)
-                    .SendAsync("ReceiveNotification", notification);
-                Console.WriteLine($"Sending notification to {postOwnerId}: {notification.Text}");
-            }
+            await _notificationHub.Clients.User(postOwnerId)
+                .SendAsync("ReceiveNotification", notification);
 
             return Ok(comment);
         }
@@ -281,7 +304,7 @@ namespace OnlineLibrary.Web.Controllers
 
             await _communityService.SharePostAsync(postId, userId, communityId);
 
-            if (userId != postOwnerId) 
+            if (userId != postOwnerId)
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
                 var notification = new NotificationDto
@@ -328,11 +351,21 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllModerators()
         {
-            var moderators = await _communityService.GetAllModeratorsAsync();
-            return Ok(moderators);
+            // اجلب كل المستخدمين اللي عندهم دور "Moderator"
+            var moderators = await _userManager.GetUsersInRoleAsync("Moderator");
+
+            // يمكنك تحويلهم لأي DTO أو ترجعهم كما هم
+            var result = moderators.Select(user => new
+            {
+                user.Id,
+                user.UserName,
+                user.Email,
+                user.firstName,
+                user.LastName
+            });
+
+            return Ok(result);
         }
-
-
 
         [HttpPost("moderators/remove")]
         [Authorize(Roles = "Admin")]
@@ -399,5 +432,91 @@ namespace OnlineLibrary.Web.Controllers
             var post = await _dbContext.CommunityPosts.FindAsync(postId);
             return post?.UserId ?? string.Empty;
         }
+
+        [HttpPost("{communityId}/images/upload")]
+        public async Task<IActionResult> UploadCommunityImage(long communityId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("يرجى اختيار صورة صحيحة.");
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "community-images");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var imageUrl = $"/community-images/{uniqueFileName}";
+
+            var image = new CommunityImage
+            {
+                CommunityId = communityId,
+                ImageUrl = imageUrl,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.CommunityImages.Add(image);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(image);
+        }
+
+        [HttpPut("{communityId}/images/update")]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> UpdateCommunityImage(long communityId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("يرجى اختيار صورة صحيحة.");
+
+            var image = await _dbContext.CommunityImages.FirstOrDefaultAsync(i => i.CommunityId == communityId);
+            if (image == null)
+                return NotFound("الصورة غير موجودة.");
+
+            var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
+            if (System.IO.File.Exists(oldFilePath))
+                System.IO.File.Delete(oldFilePath);
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "community-images");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            image.ImageUrl = $"/community-images/{uniqueFileName}";
+            image.UpdatedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(image);
+        }
+
+        [HttpDelete("images/{imageId}/delete")]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> DeleteCommunityImage(long imageId)
+        {
+            var image = await _dbContext.CommunityImages.FindAsync(imageId);
+            if (image == null)
+                return NotFound("الصورة غير موجودة.");
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
+
+            _dbContext.CommunityImages.Remove(image);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "تم حذف الصورة بنجاح." });
+        }
+
+
     }
 }
