@@ -13,5 +13,7 @@ namespace OnlineLibrary.Data.Entities
         public const string PostShare = "PostShare";
         public const string BookAdded = "BookAdded";
         public const string MessageReceived = "MessageReceived";
+        public const string PostAccepted = "PostAccepted";
+        public const string PostRejected = "PostRejected";
     }
 }

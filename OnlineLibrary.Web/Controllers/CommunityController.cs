@@ -157,22 +157,88 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize(Roles = "Sender,Admin,Moderator,User")]
         public async Task<ActionResult<CommunityPostDto>> CreatePost([FromForm] CreatePostDto dto)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            var userId = GetUserId();
+            var (username, profilePicture) = await GetUserDetails(userId);
+
             var moderationResult = await _contentModerationService.ModerateTextAsync(dto.Content);
+
+            string notificationType, notificationMessage;
             if (!moderationResult.IsAppropriate)
             {
+                notificationType = NotificationTypes.PostRejected;
+                notificationMessage = "Your post was rejected due to inappropriate content.";
+
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    ActorUserId = userId,
+                    ActorUserName = username,
+                    ActorProfilePicture = profilePicture,
+                    NotificationType = notificationType,
+                    Message = notificationMessage,
+                    RelatedEntityId = null,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _dbContext.Notifications.Add(notification);
+                await _dbContext.SaveChangesAsync();
+
+                Console.WriteLine(
+                    $"[Notification] UserId: {userId}, UserName: {username}, Type: {notificationType}, Message: {notificationMessage}, Time: {notification.CreatedAt:yyyy-MM-dd HH:mm:ss}"
+                );
+
+                var notificationDto = new NotificationDto
+                {
+                    UserId = userId,
+                    Username = username,
+                    ProfilePicture = profilePicture,
+                    Text = notificationMessage,
+                    Time = DateTime.UtcNow
+                };
+                await _notificationHub.Clients.User(userId).SendAsync("ReceiveNotification", notificationDto);
+
                 return BadRequest(new
                 {
-                    error = "تم رفض المنشور بسبب محتوى غير مناسب",
+                    error = notificationMessage,
                     details = moderationResult.ReasonMessage,
                     category = moderationResult.Category
                 });
             }
 
-            var userId = GetUserId();
             var post = await _communityService.CreatePostAsync(dto, userId);
 
-            var (username, profilePicture) = await GetUserDetails(userId);
-            var notificationDto = new NotificationDto
+            notificationType = NotificationTypes.PostAccepted;
+            notificationMessage = "Your post has been accepted and published in the community.";
+
+            var acceptedNotification = new Notification
+            {
+                UserId = userId,
+                ActorUserId = userId,
+                ActorUserName = username,
+                ActorProfilePicture = profilePicture,
+                NotificationType = notificationType,
+                Message = notificationMessage,
+                RelatedEntityId = post != null ? post.CommunityId : null,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Notifications.Add(acceptedNotification);
+            await _dbContext.SaveChangesAsync();
+
+            Console.WriteLine(
+                $"[Notification] UserId: {userId}, UserName: {username}, Type: {notificationType}, Message: {notificationMessage}, Time: {acceptedNotification.CreatedAt:yyyy-MM-dd HH:mm:ss}"
+            );
+
+            var acceptedNotificationDto = new NotificationDto
+            {
+                UserId = userId,
+                Username = username,
+                ProfilePicture = profilePicture,
+                Text = notificationMessage,
+                Time = DateTime.UtcNow
+            };
+            await _notificationHub.Clients.User(userId).SendAsync("ReceiveNotification", acceptedNotificationDto);
+
+            var groupNotificationDto = new NotificationDto
             {
                 UserId = userId,
                 Username = username,
@@ -182,12 +248,14 @@ namespace OnlineLibrary.Web.Controllers
             };
 
             await _notificationHub.Clients.GroupExcept($"Community_{dto.CommunityId}", userId)
-                .SendAsync("ReceiveNotification", notificationDto);
-
-            // يمكنك إضافة إشعار في الداتابيز هنا إذا أردت إشعار الأعضاء الجدد
+                .SendAsync("ReceiveNotification", groupNotificationDto);
 
             return Ok(post);
         }
+
+
+
+
 
         [HttpGet("{communityId}/posts")]
         [Authorize(Roles = "Receiver,Admin,Moderator,User")]
