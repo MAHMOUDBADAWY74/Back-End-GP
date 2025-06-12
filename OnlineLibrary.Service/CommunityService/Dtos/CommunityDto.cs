@@ -21,5 +21,7 @@ namespace OnlineLibrary.Service.CommunityService.Dtos
 
         public string AdminId { get; set; }
         public string AdminName { get; set; }
+        public string? ImageUrl { get; set; }
+
     }
 }

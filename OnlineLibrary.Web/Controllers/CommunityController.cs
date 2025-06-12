@@ -121,19 +121,68 @@ namespace OnlineLibrary.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<CommunityDto>> CreateCommunity(CreateCommunityDto dto)
+        public async Task<ActionResult<CommunityDto>> CreateCommunity([FromForm] CreateCommunityDto dto)
         {
             var userId = GetUserId();
             try
             {
                 var community = await _communityService.CreateCommunityAsync(dto, userId);
-                return Ok(community);
+
+                string? imageUrl = null;
+
+                if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "community-images");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    var uniqueFileName = $"{Guid.NewGuid()}_{dto.ImageFile.FileName}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await dto.ImageFile.CopyToAsync(stream);
+                    }
+
+                    imageUrl = $"/community-images/{uniqueFileName}";
+
+                    var image = new CommunityImage
+                    {
+                        CommunityId = community.Id,
+                        ImageUrl = imageUrl,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _dbContext.CommunityImages.Add(image);
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    imageUrl = null;
+                }
+
+                var response = new CommunityDto
+                {
+                    Id = community.Id,
+                    Name = community.Name,
+                    Description = community.Description,
+                    CreatedAt = community.CreatedAt,
+                    MemberCount = community.MemberCount,
+                    PostCount = community.PostCount,
+                    IsMember = community.IsMember,
+                    AdminId = community.AdminId,
+                    AdminName = community.AdminName,
+                    ImageUrl = imageUrl
+                };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+
 
         [HttpPost("{communityId}/join")]
         [Authorize]
