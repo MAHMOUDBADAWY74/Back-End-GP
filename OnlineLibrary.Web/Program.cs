@@ -16,6 +16,7 @@ using Store.Web.Extentions;
 using OnlineLibrary.Web.Hubs;
 using OnlineLibrary.Service.CommunityService.Dtos;
 using OnlineLibrary.Service.ContentModerationService;
+using System.Text.Json;
 
 namespace OnlineLibrary.Web
 {
@@ -23,6 +24,24 @@ namespace OnlineLibrary.Web
     {
         public static async Task Main(string[] args)
         {
+            // Check if appsettings.json exists and is valid JSON
+            var configPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+            if (!File.Exists(configPath))
+            {
+                Console.WriteLine("Error: appsettings.json file is missing.");
+                return;
+            }
+            try
+            {
+                var json = await File.ReadAllTextAsync(configPath);
+                JsonDocument.Parse(json); // Throws if invalid
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: appsettings.json is invalid. {ex.Message}");
+                return;
+            }
+
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
                 WebRootPath = "wwwroot"

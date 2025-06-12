@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using OnlineLibrary.Web.Hubs.Dtos;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using OnlineLibrary.Data.Entities;
+using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Web.Hubs;
 using OnlineLibrary.Repository.Interfaces;
 using OnlineLibrary.Repository.Specifications;
@@ -20,12 +23,18 @@ namespace OnlineLibrary.Web.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHubContext<ChatHub> _chatHub;
         private readonly ILogger<ChatController> _logger;
+        private readonly OnlineLibraryIdentityDbContext _dbContext;
 
-        public ChatController(IUnitOfWork unitOfWork, IHubContext<ChatHub> chatHub, ILogger<ChatController> logger)
+        public ChatController(
+            IUnitOfWork unitOfWork,
+            IHubContext<ChatHub> chatHub,
+            ILogger<ChatController> logger,
+            OnlineLibraryIdentityDbContext dbContext)
         {
             _unitOfWork = unitOfWork;
             _chatHub = chatHub;
             _logger = logger;
+            _dbContext = dbContext;
         }
 
         [HttpPost("send")]
@@ -34,6 +43,13 @@ namespace OnlineLibrary.Web.Controllers
             var senderId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(senderId) || string.IsNullOrEmpty(messageDto.ReceiverId))
                 return BadRequest("Sender or Receiver ID is missing.");
+
+            // جلب بيانات المرسل من قاعدة البيانات
+            var sender = await _dbContext.Users
+                .Include(u => u.UserProfile)
+                .FirstOrDefaultAsync(u => u.Id == senderId);
+            if (sender == null)
+                return BadRequest("Sender not found.");
 
             var message = new ChatMessage
             {
@@ -44,6 +60,21 @@ namespace OnlineLibrary.Web.Controllers
 
             await _unitOfWork.Repository<ChatMessage>().AddAsync(message);
             await _unitOfWork.CountAsync();
+
+            // إنشاء إشعار بعد حفظ الرسالة
+            var notification = new Notification
+            {
+                UserId = messageDto.ReceiverId, 
+                ActorUserId = senderId, 
+                ActorUserName = sender.UserName, 
+                ActorProfilePicture = sender.UserProfile?.ProfilePhoto ?? "default_profile.jpg", 
+                NotificationType = NotificationTypes.MessageReceived,
+                Message = $"{sender.UserName} sent you a new message.",
+                RelatedEntityId = message.Id, 
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Notifications.Add(notification);
+            await _dbContext.SaveChangesAsync();
 
             await _chatHub.Clients.User(messageDto.ReceiverId).SendAsync("ReceiveMessage", senderId, message.Message);
 
@@ -106,6 +137,48 @@ namespace OnlineLibrary.Web.Controllers
             }).ToList();
 
             return Ok(messageDtos);
+        }
+
+        [HttpGet("conversations")]
+        public async Task<IActionResult> GetConversations()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("User ID is missing.");
+
+            var messages = await _unitOfWork.Repository<ChatMessage>().GetAllAsync();
+
+            var lastMessages = messages
+                .Where(m => m.SenderId == userId || m.ReceiverId == userId)
+                .GroupBy(m => m.SenderId == userId ? m.ReceiverId : m.SenderId)
+                .Select(g => g.OrderByDescending(m => m.CreatedAt).First())
+                .ToList();
+
+            var otherUserIds = lastMessages
+                .Select(m => m.SenderId == userId ? m.ReceiverId : m.SenderId)
+                .Distinct()
+                .ToList();
+
+            var users = await _dbContext.Users
+                .Where(u => otherUserIds.Contains(u.Id))
+                .Include(u => u.UserProfile)
+                .ToListAsync();
+
+            var conversations = lastMessages.Select(m =>
+            {
+                var otherUserId = m.SenderId == userId ? m.ReceiverId : m.SenderId;
+                var user = users.FirstOrDefault(u => u.Id == otherUserId);
+
+                return new ConversationDto
+                {
+                    UserId = user?.Id,
+                    UserName = user?.UserName,
+                    ProfilePicture = user?.UserProfile?.ProfilePhoto ?? "default_profile.jpg",
+                    LastMessage = m.Message
+                };
+            }).ToList();
+
+            return Ok(conversations);
         }
     }
 }

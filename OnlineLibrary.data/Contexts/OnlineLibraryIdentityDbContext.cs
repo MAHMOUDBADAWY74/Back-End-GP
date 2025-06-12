@@ -30,6 +30,8 @@ namespace OnlineLibrary.Data.Contexts
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<Visit> Visits { get; set; }
         public DbSet<CommunityImage> CommunityImages { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+
 
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)

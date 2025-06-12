@@ -306,6 +306,32 @@ namespace OnlineLibrary.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsRead = table.Column<bool>(type: "bit", nullable: true),
+                    NotificationType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ActorUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ActorUserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ActorProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RelatedEntityId = table.Column<long>(type: "bigint", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PendingUserChanges",
                 columns: table => new
                 {
@@ -825,6 +851,11 @@ namespace OnlineLibrary.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_UserId",
+                table: "Notifications",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PendingUserChanges_UserId",
                 table: "PendingUserChanges",
                 column: "UserId");
@@ -953,6 +984,9 @@ namespace OnlineLibrary.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "History");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "PendingUserChanges");

@@ -15,6 +15,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -54,6 +55,36 @@ namespace OnlineLibrary.Web.Controllers
             string profilePicture = userProfile?.ProfilePhoto ?? "default_profile.jpg";
 
             return (username, profilePicture);
+        }
+
+        [HttpGet("notifications/latest")]
+        [Authorize]
+        public async Task<IActionResult> GetLatestNotifications()
+        {
+            var userId = GetUserId();
+            var notifications = await _dbContext.Notifications
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(10)
+                .Select(n => new
+                {
+                    n.Id,
+                    n.NotificationType,
+                    n.Message,
+                    n.ActorUserId,
+                    n.ActorUserName,
+                    n.ActorProfilePicture,
+                    n.RelatedEntityId,
+                    n.CreatedAt,
+                    TimeAgo = EF.Functions.DateDiffMinute(n.CreatedAt, DateTime.UtcNow) < 60
+                        ? EF.Functions.DateDiffMinute(n.CreatedAt, DateTime.UtcNow) + " min ago"
+                        : EF.Functions.DateDiffHour(n.CreatedAt, DateTime.UtcNow) < 24
+                            ? EF.Functions.DateDiffHour(n.CreatedAt, DateTime.UtcNow) + " h ago"
+                            : EF.Functions.DateDiffDay(n.CreatedAt, DateTime.UtcNow) + " d ago"
+                })
+                .ToListAsync();
+
+            return Ok(notifications);
         }
 
         [HttpGet]
@@ -126,7 +157,6 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize(Roles = "Sender,Admin,Moderator,User")]
         public async Task<ActionResult<CommunityPostDto>> CreatePost([FromForm] CreatePostDto dto)
         {
-            // فحص المحتوى باستخدام خدمة مراقبة المحتوى
             var moderationResult = await _contentModerationService.ModerateTextAsync(dto.Content);
             if (!moderationResult.IsAppropriate)
             {
@@ -142,7 +172,7 @@ namespace OnlineLibrary.Web.Controllers
             var post = await _communityService.CreatePostAsync(dto, userId);
 
             var (username, profilePicture) = await GetUserDetails(userId);
-            var notification = new NotificationDto
+            var notificationDto = new NotificationDto
             {
                 UserId = userId,
                 Username = username,
@@ -152,7 +182,9 @@ namespace OnlineLibrary.Web.Controllers
             };
 
             await _notificationHub.Clients.GroupExcept($"Community_{dto.CommunityId}", userId)
-                .SendAsync("ReceiveNotification", notification);
+                .SendAsync("ReceiveNotification", notificationDto);
+
+            // يمكنك إضافة إشعار في الداتابيز هنا إذا أردت إشعار الأعضاء الجدد
 
             return Ok(post);
         }
@@ -191,7 +223,24 @@ namespace OnlineLibrary.Web.Controllers
             if (userId != postOwnerId)
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
-                var notification = new NotificationDto
+
+                // حفظ الإشعار في الداتابيز
+                var notification = new Notification
+                {
+                    UserId = postOwnerId,
+                    ActorUserId = userId,
+                    ActorUserName = username,
+                    ActorProfilePicture = profilePicture,
+                    NotificationType = NotificationTypes.PostLike,
+                    Message = $"{username} liked your post!",
+                    RelatedEntityId = postId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _dbContext.Notifications.Add(notification);
+                await _dbContext.SaveChangesAsync();
+
+                // إشعار SignalR
+                var notificationDto = new NotificationDto
                 {
                     UserId = userId,
                     Username = username,
@@ -201,8 +250,7 @@ namespace OnlineLibrary.Web.Controllers
                 };
 
                 await _notificationHub.Clients.User(postOwnerId)
-                    .SendAsync("ReceiveNotification", notification);
-                Console.WriteLine($"Sending notification to {postOwnerId}: {notification.Text}");
+                    .SendAsync("ReceiveNotification", notificationDto);
             }
 
             return Ok();
@@ -221,10 +269,12 @@ namespace OnlineLibrary.Web.Controllers
 
             await _communityService.UnlikePostAsync(postId, userId);
 
+            // يمكنك إضافة إشعار في الداتابيز هنا إذا أردت
+
             if (userId != postOwnerId)
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
-                var notification = new NotificationDto
+                var notificationDto = new NotificationDto
                 {
                     UserId = userId,
                     Username = username,
@@ -234,8 +284,8 @@ namespace OnlineLibrary.Web.Controllers
                 };
 
                 await _notificationHub.Clients.User(postOwnerId)
-                    .SendAsync("ReceiveNotification", notification);
-                Console.WriteLine($"Sending notification to {postOwnerId}: {notification.Text}");
+                    .SendAsync("ReceiveNotification", notificationDto);
+                Console.WriteLine($"Sending notification to {postOwnerId}: {notificationDto.Text}");
             }
 
             return Ok();
@@ -245,7 +295,6 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize]
         public async Task<ActionResult<PostCommentDto>> AddComment(CreateCommentDto dto)
         {
-            // فحص محتوى التعليق باستخدام خدمة مراقبة المحتوى
             var moderationResult = await _contentModerationService.ModerateTextAsync(dto.Content);
 
             if (!moderationResult.IsAppropriate)
@@ -268,7 +317,24 @@ namespace OnlineLibrary.Web.Controllers
             var comment = await _communityService.AddCommentAsync(dto, userId);
 
             var (username, profilePicture) = await GetUserDetails(userId);
-            var notification = new NotificationDto
+
+            // حفظ الإشعار في الداتابيز
+            var notification = new Notification
+            {
+                UserId = postOwnerId,
+                ActorUserId = userId,
+                ActorUserName = username,
+                ActorProfilePicture = profilePicture,
+                NotificationType = NotificationTypes.PostComment,
+                Message = $"{username} commented on your post!",
+                RelatedEntityId = dto.PostId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Notifications.Add(notification);
+            await _dbContext.SaveChangesAsync();
+
+            // إشعار SignalR
+            var notificationDto = new NotificationDto
             {
                 UserId = userId,
                 Username = username,
@@ -278,7 +344,7 @@ namespace OnlineLibrary.Web.Controllers
             };
 
             await _notificationHub.Clients.User(postOwnerId)
-                .SendAsync("ReceiveNotification", notification);
+                .SendAsync("ReceiveNotification", notificationDto);
 
             return Ok(comment);
         }
@@ -307,7 +373,24 @@ namespace OnlineLibrary.Web.Controllers
             if (userId != postOwnerId)
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
-                var notification = new NotificationDto
+
+                // حفظ الإشعار في الداتابيز
+                var notification = new Notification
+                {
+                    UserId = postOwnerId,
+                    ActorUserId = userId,
+                    ActorUserName = username,
+                    ActorProfilePicture = profilePicture,
+                    NotificationType = NotificationTypes.PostShare,
+                    Message = $"{username} shared your post!",
+                    RelatedEntityId = postId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _dbContext.Notifications.Add(notification);
+                await _dbContext.SaveChangesAsync();
+
+                // إشعار SignalR
+                var notificationDto = new NotificationDto
                 {
                     UserId = userId,
                     Username = username,
@@ -317,8 +400,8 @@ namespace OnlineLibrary.Web.Controllers
                 };
 
                 await _notificationHub.Clients.User(postOwnerId)
-                    .SendAsync("ReceiveNotification", notification);
-                Console.WriteLine($"Sending notification to {postOwnerId}: {notification.Text}");
+                    .SendAsync("ReceiveNotification", notificationDto);
+                Console.WriteLine($"Sending notification to {postOwnerId}: {notificationDto.Text}");
             }
 
             return Ok();
@@ -347,14 +430,12 @@ namespace OnlineLibrary.Web.Controllers
 
             return Ok();
         }
+
         [HttpGet("moderators/all")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllModerators()
         {
-            // اجلب كل المستخدمين اللي عندهم دور "Moderator"
             var moderators = await _userManager.GetUsersInRoleAsync("Moderator");
-
-            // يمكنك تحويلهم لأي DTO أو ترجعهم كما هم
             var result = moderators.Select(user => new
             {
                 user.Id,
@@ -516,7 +597,5 @@ namespace OnlineLibrary.Web.Controllers
 
             return Ok(new { message = "تم حذف الصورة بنجاح." });
         }
-
-
     }
 }

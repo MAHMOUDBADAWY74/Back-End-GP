@@ -99,7 +99,7 @@ namespace OnlineLibrary.Service.UserService
                 Email = input.Email,
                 UserName = input.UserName,
                 Gender = input.Gender,
-                DateOfBirth = input.DateOfBirth,
+                DateOfBirth = input.DateOfBirth.HasValue ? DateOnly.FromDateTime(input.DateOfBirth.Value) : (DateOnly?)null,
                 IsBlocked = false
             };
 
@@ -123,9 +123,11 @@ namespace OnlineLibrary.Service.UserService
                 Email = appUser.Email,
                 Gender = appUser.Gender,
                 Age = appUser.DateOfBirth.HasValue ? CalculateAge(appUser.DateOfBirth) : null,
-                ProfilePicture = null 
+                Token = await _tokenService.GenerateJwtToken(appUser), 
+                ProfilePicture = null
             };
         }
+
 
         public async Task<bool> ResetPassword(ResetPasswordDto input)
         {

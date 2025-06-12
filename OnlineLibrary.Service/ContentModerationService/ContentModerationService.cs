@@ -56,8 +56,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                 throw new ArgumentNullException(nameof(_perspectiveApiKey), "Perspective API Key is required.");
             }
 
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_hfApiKey}");
+            _httpClient = new HttpClient(); 
             _logger.LogInformation("ContentModerationService initialized.");
         }
 
@@ -66,7 +65,6 @@ namespace OnlineLibrary.Service.ContentModerationService
             _logger.LogInformation($"Moderating text: {text}");
             string lowerText = text.ToLowerInvariant();
 
-            // الخطوة 1: فلترة الكلمات باستخدام Regex
             var offensivePatterns = new Dictionary<string, string>
             {
                 { "idiot", @"\b[i1!][dcl][i1!][o0][t7]\b" },
@@ -94,7 +92,6 @@ namespace OnlineLibrary.Service.ContentModerationService
                 }
             }
 
-            // الخطوة 2: فلترة الكلمات المفتاحية التقليدية
             foreach (var keyword in _offensiveKeywords)
             {
                 if (Regex.IsMatch(lowerText, $@"\b{keyword}\b", RegexOptions.IgnoreCase))
@@ -109,13 +106,11 @@ namespace OnlineLibrary.Service.ContentModerationService
                 }
             }
 
-            // الخطوة 3: فصل النصوص العربية والإنجليزية
             var arabicText = string.Join(" ", Regex.Matches(text, @"[\u0600-\u06FF]+").Cast<Match>().Select(m => m.Value));
             var englishText = string.Join(" ", Regex.Matches(text, @"[a-zA-Z]+").Cast<Match>().Select(m => m.Value));
 
             try
             {
-                // تحليل النصوص العربية
                 if (!string.IsNullOrEmpty(arabicText))
                 {
                     var arabicResult = await AnalyzeWithHuggingFace(arabicText, _hfArabicModelUrl);
@@ -126,7 +121,6 @@ namespace OnlineLibrary.Service.ContentModerationService
                     }
                 }
 
-                // تحليل النصوص الإنجليزية
                 if (!string.IsNullOrEmpty(englishText))
                 {
                     var englishResult = await AnalyzeWithPerspective(englishText);
@@ -161,7 +155,12 @@ namespace OnlineLibrary.Service.ContentModerationService
         {
             var requestBody = new { inputs = text };
             var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(modelUrl, content);
+            var request = new HttpRequestMessage(HttpMethod.Post, modelUrl)
+            {
+                Content = content
+            };
+            request.Headers.Add("Authorization", $"Bearer {_hfApiKey}"); 
+            var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var responseBody = await response.Content.ReadAsStringAsync();
             _logger.LogDebug($"Hugging Face API response: {responseBody}");
@@ -225,7 +224,11 @@ namespace OnlineLibrary.Service.ContentModerationService
 
             var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
             var requestUrl = $"{_perspectiveEndpoint}?key={_perspectiveApiKey}";
-            var response = await _httpClient.PostAsync(requestUrl, content);
+            var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
+            {
+                Content = content
+            };
+            var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var responseBody = await response.Content.ReadAsStringAsync();
             _logger.LogDebug($"Perspective API response: {responseBody}");
@@ -261,7 +264,6 @@ namespace OnlineLibrary.Service.ContentModerationService
                 insultScore = insultValue.GetDouble();
             }
 
-            // عتبة 0.7 للسمية أو الإهانة
             if (toxicityScore > 0.7 || insultScore > 0.7)
             {
                 string category = toxicityScore > insultScore ? "TOXICITY" : "INSULT";

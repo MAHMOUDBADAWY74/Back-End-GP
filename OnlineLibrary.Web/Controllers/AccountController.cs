@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary.Service.UserService.Dtos;
 using OnlineLibrary.Service.UserService;
 using OnlineLibrary.Service.HandleResponse;
+using OnlineLibrary.Data.Contexts;
+using OnlineLibrary.Data.Entities;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -11,10 +13,12 @@ namespace OnlineLibrary.Web.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly OnlineLibraryIdentityDbContext _dbContext;
 
-        public AccountController(IUserService userService)
+        public AccountController(IUserService userService, OnlineLibraryIdentityDbContext dbContext)
         {
             _userService = userService;
+            _dbContext = dbContext;
         }
 
         [HttpPost("login")]
@@ -33,13 +37,21 @@ namespace OnlineLibrary.Web.Controllers
                         message = "Bad Request"
                     });
                 }
+
+                _dbContext.Visits.Add(new Visit
+                {
+                    VisitDate = DateTime.UtcNow,
+                    UserId = result.Id.ToString()
+                });
+                await _dbContext.SaveChangesAsync();
+
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 return BadRequest(new
                 {
-                    errors = new[] { ex.Message }, 
+                    errors = new[] { ex.Message },
                     details = (string)null,
                     statusCode = 400,
                     message = "Bad Request"
@@ -63,6 +75,14 @@ namespace OnlineLibrary.Web.Controllers
                         message = "Bad Request"
                     });
                 }
+
+                _dbContext.Visits.Add(new Visit
+                {
+                    VisitDate = DateTime.UtcNow,
+                    UserId = result.Id.ToString()
+                });
+                await _dbContext.SaveChangesAsync();
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -76,13 +96,15 @@ namespace OnlineLibrary.Web.Controllers
                 });
             }
         }
+
+
+
         [HttpGet("search")]
         public async Task<IActionResult> SearchUsers([FromQuery] string term)
         {
             var users = await _userService.SearchUsersAsync(term);
             return Ok(users);
         }
-
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
@@ -102,13 +124,6 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto input)
         {
             var result = await _userService.ResetPassword(input);
-            return Ok(new { success = result });
-        }
-
-        [HttpPost("verify-email")]
-        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto input)
-        {
-            var result = await _userService.VerifyEmail(input);
             return Ok(new { success = result });
         }
     }

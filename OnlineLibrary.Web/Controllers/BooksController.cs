@@ -12,6 +12,7 @@ using OnlineLibrary.Web.Hubs.Dtos;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -66,6 +67,7 @@ namespace OnlineLibrary.Web.Controllers
             if (book == null) return NotFound();
             return Ok(book);
         }
+
         [HttpGet("search")]
         public async Task<IActionResult> SearchBooks([FromQuery] string term)
         {
@@ -122,6 +124,13 @@ namespace OnlineLibrary.Web.Controllers
         {
             await _bookService.RemoveBookCoverAsync(id);
             return Ok("Cover removed successfully.");
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> GetBooksCount()
+        {
+            var count = await _dbContext.BooksData.AsNoTracking().CountAsync();
+            return Ok(count);
         }
 
         [HttpGet("paginated")]
