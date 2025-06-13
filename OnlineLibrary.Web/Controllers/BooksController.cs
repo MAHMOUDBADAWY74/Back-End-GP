@@ -95,32 +95,59 @@ namespace OnlineLibrary.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> AddBook([FromForm] AddBookDetailsDto addBookDetailsDto)
+        public async Task<IActionResult> AddBook([FromForm] AddBookDetailsDto addBookDetailsDto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            string? epubFilePath = null;
-            if (addBookDetailsDto.EpubFile != null && addBookDetailsDto.EpubFile.Length > 0)
+            if (addBookDetailsDto.EpubFile == null || addBookDetailsDto.EpubFile.Length == 0)
+                return BadRequest("EPUB file is required.");
+
+             string? coverFileName = null;
+            if (addBookDetailsDto.Cover != null && addBookDetailsDto.Cover.Length > 0)
             {
-                var downloadsFolder = Path.Combine(_env.WebRootPath, "downloads");
-                if (!Directory.Exists(downloadsFolder))
-                    Directory.CreateDirectory(downloadsFolder);
+                var imagesFolder = Path.Combine(_env.WebRootPath, "images");
+                if (!Directory.Exists(imagesFolder))
+                    Directory.CreateDirectory(imagesFolder);
 
-                var uniqueFileName = $"{Guid.NewGuid()}_{addBookDetailsDto.EpubFile.FileName}";
-                var filePath = Path.Combine(downloadsFolder, uniqueFileName);
+                var ext = Path.GetExtension(addBookDetailsDto.Cover.FileName); 
+                coverFileName = $"cover_{Guid.NewGuid()}{ext}";
+                var coverPath = Path.Combine(imagesFolder, coverFileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                using (var stream = new FileStream(coverPath, FileMode.Create))
                 {
-                    await addBookDetailsDto.EpubFile.CopyToAsync(stream);
+                    await addBookDetailsDto.Cover.CopyToAsync(stream);
                 }
-
-                epubFilePath = $"/downloads/{uniqueFileName}";
             }
 
-            await _bookService.AddBookAsync(addBookDetailsDto);
+            var book = new BooksDatum
+            {
+                Title = addBookDetailsDto.Title,
+                Author = addBookDetailsDto.Author,
+                Category = addBookDetailsDto.Category,
+                Summary = addBookDetailsDto.Summary,
+                Cover = coverFileName 
+            };
+            _dbContext.BooksData.Add(book);
+            await _dbContext.SaveChangesAsync();
+
+            var downloadsFolder = Path.Combine(_env.WebRootPath, "downloads");
+            if (!Directory.Exists(downloadsFolder))
+                Directory.CreateDirectory(downloadsFolder);
+
+            var fileNameToSave = $"book_{book.Id}.epub";
+            var filePath = Path.Combine(downloadsFolder, fileNameToSave);
+
+            if (System.IO.File.Exists(filePath))
+                return Conflict(new { message = $"The id {book.Id} is already used. Please try again." });
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await addBookDetailsDto.EpubFile.CopyToAsync(stream);
+            }
+
+            var epubFilePath = $"/downloads/{fileNameToSave}";
+            var coverPathRelative = coverFileName != null ? $"/images/{coverFileName}" : null;
 
             var userId = GetUserId();
             var (username, profilePicture) = await GetUserDetails(userId);
@@ -133,7 +160,7 @@ namespace OnlineLibrary.Web.Controllers
                 ActorUserId = userId,
                 ActorUserName = username,
                 ActorProfilePicture = profilePicture,
-                RelatedEntityId = null,
+                RelatedEntityId = book.Id,
                 CreatedAt = DateTime.UtcNow,
                 TimeAgo = GetTimeAgo(DateTime.UtcNow)
             };
@@ -142,8 +169,19 @@ namespace OnlineLibrary.Web.Controllers
                 .SendAsync("ReceiveNotification", notification);
             Console.WriteLine($"Sending notification to all users: {notification.Message}");
 
-            return Ok(new { message = "Book added successfully.", epubPath = epubFilePath });
+            return Ok(new
+            {
+                message = "Book uploaded successfully.",
+                epubPath = epubFilePath,
+                coverPath = coverPathRelative,
+                id = book.Id
+            });
         }
+
+
+
+
+
 
         [HttpPut]
         public async Task<ActionResult> UpdateBook([FromForm] BookDetailsDto bookDetailsDto)

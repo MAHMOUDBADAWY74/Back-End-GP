@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
 using OnlineLibrary.Repository;
+using OnlineLibrary.Service.BookService.Dtos;
 
 namespace OnlineLibrary.Web.Helper
 {
@@ -33,3 +36,5 @@ namespace OnlineLibrary.Web.Helper
         }
     }
 }
+
+
