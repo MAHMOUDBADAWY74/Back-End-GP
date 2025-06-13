@@ -13,6 +13,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -24,17 +26,21 @@ namespace OnlineLibrary.Web.Controllers
         private readonly IHubContext<NotificationHub> _notificationHub;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly OnlineLibraryIdentityDbContext _dbContext;
+        private readonly IWebHostEnvironment _env; 
 
         public BooksController(
             IBookService bookService,
             IHubContext<NotificationHub> notificationHub,
             UserManager<ApplicationUser> userManager,
-            OnlineLibraryIdentityDbContext dbContext)
+            OnlineLibraryIdentityDbContext dbContext,
+            IWebHostEnvironment env 
+        )
         {
             _bookService = bookService;
             _notificationHub = notificationHub;
             _userManager = userManager;
             _dbContext = dbContext;
+            _env = env; 
         }
 
         private string GetUserId() => _userManager.GetUserId(User);
@@ -96,6 +102,24 @@ namespace OnlineLibrary.Web.Controllers
                 return BadRequest(ModelState);
             }
 
+            string? epubFilePath = null;
+            if (addBookDetailsDto.EpubFile != null && addBookDetailsDto.EpubFile.Length > 0)
+            {
+                var downloadsFolder = Path.Combine(_env.WebRootPath, "downloads");
+                if (!Directory.Exists(downloadsFolder))
+                    Directory.CreateDirectory(downloadsFolder);
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{addBookDetailsDto.EpubFile.FileName}";
+                var filePath = Path.Combine(downloadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await addBookDetailsDto.EpubFile.CopyToAsync(stream);
+                }
+
+                epubFilePath = $"/downloads/{uniqueFileName}";
+            }
+
             await _bookService.AddBookAsync(addBookDetailsDto);
 
             var userId = GetUserId();
@@ -103,7 +127,7 @@ namespace OnlineLibrary.Web.Controllers
 
             var notification = new NotificationDto
             {
-                Id = 0, // لا يوجد Id حقيقي هنا، يمكن تجاهله أو تعيينه لاحقاً إذا لزم الأمر
+                Id = 0,
                 NotificationType = "BookAdded",
                 Message = $"A new book '{addBookDetailsDto.Title}' has been added by {username}!",
                 ActorUserId = userId,
@@ -118,7 +142,7 @@ namespace OnlineLibrary.Web.Controllers
                 .SendAsync("ReceiveNotification", notification);
             Console.WriteLine($"Sending notification to all users: {notification.Message}");
 
-            return Ok("Book added successfully.");
+            return Ok(new { message = "Book added successfully.", epubPath = epubFilePath });
         }
 
         [HttpPut]
@@ -165,6 +189,7 @@ namespace OnlineLibrary.Web.Controllers
                 return NotFound("No categories available.");
             return Ok(categories);
         }
+
         [HttpPost("wishlist/add")]
         [Authorize]
         public async Task<IActionResult> AddToWishlist([FromQuery] long bookId)
@@ -253,6 +278,5 @@ namespace OnlineLibrary.Web.Controllers
 
             return Ok(books);
         }
-
     }
 }

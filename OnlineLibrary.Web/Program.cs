@@ -120,6 +120,9 @@ namespace OnlineLibrary.Web
             // Register AutoMapper
             builder.Services.AddAutoMapper(typeof(CommunityProfile).Assembly);
 
+            // Register HttpClientFactory
+            builder.Services.AddHttpClient();
+
             var app = builder.Build();
 
             // Database seeding
@@ -182,6 +185,12 @@ namespace OnlineLibrary.Web
                 {
                     Directory.CreateDirectory(communityimagesPath);
                     Console.WriteLine("Created wwwroot/community-images directory.");
+                }
+                var downloadsPath = Path.Combine(app.Environment.WebRootPath, "downloads");
+                if (!Directory.Exists(downloadsPath))
+                {
+                    Directory.CreateDirectory(downloadsPath);
+                    Console.WriteLine("Created wwwroot/downloads directory.");
                 }
                 // Test write access once
                 var testFilePath = Path.Combine(imagesPath, "test.txt");
