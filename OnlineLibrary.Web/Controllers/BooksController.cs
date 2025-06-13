@@ -165,5 +165,94 @@ namespace OnlineLibrary.Web.Controllers
                 return NotFound("No categories available.");
             return Ok(categories);
         }
+        [HttpPost("wishlist/add")]
+        [Authorize]
+        public async Task<IActionResult> AddToWishlist([FromQuery] long bookId)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var exists = await _dbContext.Wishlists.AnyAsync(w => w.UserId == userId && w.BookId == bookId);
+            if (exists)
+                return BadRequest("Book already in wishlist.");
+
+            var wishlist = new Wishlist
+            {
+                UserId = userId,
+                BookId = bookId,
+                AddedOn = DateTime.UtcNow
+            };
+            _dbContext.Wishlists.Add(wishlist);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Book added to wishlist.");
+        }
+
+        [HttpDelete("wishlist/remove")]
+        [Authorize]
+        public async Task<IActionResult> RemoveFromWishlist([FromQuery] long bookId)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var wishlist = await _dbContext.Wishlists.FirstOrDefaultAsync(w => w.UserId == userId && w.BookId == bookId);
+            if (wishlist == null)
+                return NotFound("Book not found in wishlist.");
+
+            _dbContext.Wishlists.Remove(wishlist);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Book removed from wishlist.");
+        }
+
+        [HttpDelete("wishlist/clear")]
+        [Authorize]
+        public async Task<IActionResult> ClearWishlist()
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var wishlists = await _dbContext.Wishlists.Where(w => w.UserId == userId).ToListAsync();
+            if (!wishlists.Any())
+                return NotFound("Wishlist is already empty.");
+
+            _dbContext.Wishlists.RemoveRange(wishlists);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Wishlist cleared.");
+        }
+
+        [HttpGet("wishlist/all")]
+        [Authorize]
+        public async Task<IActionResult> GetWishlistBooks()
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var bookIds = await _dbContext.Wishlists
+                .Where(w => w.UserId == userId)
+                .Select(w => w.BookId)
+                .ToListAsync();
+
+            var books = await _dbContext.BooksData
+                .Where(b => bookIds.Contains(b.Id))
+                .Select(b => new
+                {
+                    b.Id,
+                    b.Title,
+                    b.Category,
+                    b.Author,
+                    b.Summary,
+                    b.Cover
+                })
+                .ToListAsync();
+
+            return Ok(books);
+        }
+
     }
 }

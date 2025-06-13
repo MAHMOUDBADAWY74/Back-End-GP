@@ -14,7 +14,6 @@ namespace OnlineLibrary.Service.BookService.Dtos
         public string? Category { get; set; }
         public string? Author { get; set; }
         public string? Summary { get; set; }
-        public string? Text { get; set; }
         public string? Cover { get; set; } // رابط URL للصورة
         public IFormFile? NewCover { get; set; } // الصورة الجديدة
     }

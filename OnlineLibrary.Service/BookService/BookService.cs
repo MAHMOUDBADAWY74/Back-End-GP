@@ -158,8 +158,7 @@ namespace OnlineLibrary.Service.BookService
             if (!string.IsNullOrEmpty(bookDetailsDto.Summary))
                 book.Summary = bookDetailsDto.Summary;
 
-            if (!string.IsNullOrEmpty(bookDetailsDto.Text))
-                book.Text = bookDetailsDto.Text;
+            
 
             _unitOfWork.Repository<BooksDatum>().Update(book);
             await _unitOfWork.CountAsync();

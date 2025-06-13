@@ -22,9 +22,6 @@ namespace OnlineLibrary.Service.BookService.Dtos
         [Required(ErrorMessage = "Summary is required.")]
         public string? Summary { get; set; }
 
-        [Required(ErrorMessage = "Text is required.")]
-        public string? Text { get; set; }
-
         [Required(ErrorMessage = "Cover image is required.")]
         public IFormFile? Cover { get; set; }
     }

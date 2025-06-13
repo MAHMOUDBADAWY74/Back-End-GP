@@ -83,7 +83,8 @@ namespace OnlineLibrary.Web
                     {
                         var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
-                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/chatHub")))
                         {
                             context.Token = accessToken;
                         }
@@ -140,7 +141,7 @@ namespace OnlineLibrary.Web
             }
 
             app.UseHttpsRedirection();
-
+            app.UseWebSockets(); 
             app.UseCors("AllowFrontend");
 
             app.UseAuthentication();

@@ -9,12 +9,14 @@ namespace OnlineLibrary.Web.Hubs
     {
         public override async Task OnConnectedAsync()
         {
+            var userId = Context.UserIdentifier;
+            Console.WriteLine($"User connected: {userId}");
             await base.OnConnectedAsync();
         }
 
         public async Task SendMessage(string receiverId, string message)
         {
-            var senderId = Context.UserIdentifier; 
+            var senderId = Context.UserIdentifier;
             await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, message);
         }
     }
