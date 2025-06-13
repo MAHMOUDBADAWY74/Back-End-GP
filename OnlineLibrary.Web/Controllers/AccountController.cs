@@ -103,8 +103,15 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<IActionResult> SearchUsers([FromQuery] string term)
         {
             var users = await _userService.SearchUsersAsync(term);
-            return Ok(users);
+            var result = users.Select(u => new
+            {
+                userId = u.Id,
+                userName = u.UserName,
+                profilePicture = u.ProfilePicture
+            });
+            return Ok(result);
         }
+
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
