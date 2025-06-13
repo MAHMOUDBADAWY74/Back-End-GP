@@ -4,10 +4,14 @@ namespace OnlineLibrary.Web.Hubs.Dtos
 {
     public class NotificationDto
     {
-        public string UserId { get; set; }
-        public string Username { get; set; }
-        public string ProfilePicture { get; set; }
-        public string Text { get; set; }
-        public DateTime Time { get; set; }
+        public long Id { get; set; }
+        public string NotificationType { get; set; }
+        public string Message { get; set; }
+        public string ActorUserId { get; set; }
+        public string ActorUserName { get; set; }
+        public string ActorProfilePicture { get; set; }
+        public long? RelatedEntityId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string TimeAgo { get; set; }
     }
 }

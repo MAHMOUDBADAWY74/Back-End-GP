@@ -57,6 +57,18 @@ namespace OnlineLibrary.Web.Controllers
             return (username, profilePicture);
         }
 
+        private string GetTimeAgo(DateTime createdAt)
+        {
+            var minutes = (int)(DateTime.UtcNow - createdAt).TotalMinutes;
+            if (minutes < 60)
+                return $"{minutes} min ago";
+            var hours = (int)(DateTime.UtcNow - createdAt).TotalHours;
+            if (hours < 24)
+                return $"{hours} h ago";
+            var days = (int)(DateTime.UtcNow - createdAt).TotalDays;
+            return $"{days} d ago";
+        }
+
         [HttpGet("notifications/latest")]
         [Authorize]
         public async Task<IActionResult> GetLatestNotifications()
@@ -66,16 +78,16 @@ namespace OnlineLibrary.Web.Controllers
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
                 .Take(10)
-                .Select(n => new
+                .Select(n => new NotificationDto
                 {
-                    n.Id,
-                    n.NotificationType,
-                    n.Message,
-                    n.ActorUserId,
-                    n.ActorUserName,
-                    n.ActorProfilePicture,
-                    n.RelatedEntityId,
-                    n.CreatedAt,
+                    Id = n.Id,
+                    NotificationType = n.NotificationType,
+                    Message = n.Message,
+                    ActorUserId = n.ActorUserId,
+                    ActorUserName = n.ActorUserName,
+                    ActorProfilePicture = n.ActorProfilePicture,
+                    RelatedEntityId = n.RelatedEntityId,
+                    CreatedAt = n.CreatedAt,
                     TimeAgo = EF.Functions.DateDiffMinute(n.CreatedAt, DateTime.UtcNow) < 60
                         ? EF.Functions.DateDiffMinute(n.CreatedAt, DateTime.UtcNow) + " min ago"
                         : EF.Functions.DateDiffHour(n.CreatedAt, DateTime.UtcNow) < 24
@@ -126,12 +138,10 @@ namespace OnlineLibrary.Web.Controllers
             var userId = GetUserId();
             try
             {
-                // Create the community first
                 var community = await _communityService.CreateCommunityAsync(dto, userId);
 
                 string? imageUrl = null;
 
-                // If an image is uploaded
                 if (dto.ImageFile != null && dto.ImageFile.Length > 0)
                 {
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "community-images");
@@ -162,7 +172,6 @@ namespace OnlineLibrary.Web.Controllers
                     imageUrl = null;
                 }
 
-                // Add image path to the response DTO
                 var response = new CommunityDto
                 {
                     Id = community.Id,
@@ -233,17 +242,17 @@ namespace OnlineLibrary.Web.Controllers
                 _dbContext.Notifications.Add(notification);
                 await _dbContext.SaveChangesAsync();
 
-                Console.WriteLine(
-                    $"[Notification] UserId: {userId}, UserName: {username}, Type: {notificationType}, Message: {notificationMessage}, Time: {notification.CreatedAt:yyyy-MM-dd HH:mm:ss}"
-                );
-
                 var notificationDto = new NotificationDto
                 {
-                    UserId = userId,
-                    Username = username,
-                    ProfilePicture = profilePicture,
-                    Text = notificationMessage,
-                    Time = DateTime.UtcNow
+                    Id = notification.Id,
+                    NotificationType = notification.NotificationType,
+                    Message = notification.Message,
+                    ActorUserId = notification.ActorUserId,
+                    ActorUserName = notification.ActorUserName,
+                    ActorProfilePicture = notification.ActorProfilePicture,
+                    RelatedEntityId = notification.RelatedEntityId,
+                    CreatedAt = notification.CreatedAt,
+                    TimeAgo = GetTimeAgo(notification.CreatedAt)
                 };
                 await _notificationHub.Clients.User(userId).SendAsync("ReceiveNotification", notificationDto);
 
@@ -274,27 +283,31 @@ namespace OnlineLibrary.Web.Controllers
             _dbContext.Notifications.Add(acceptedNotification);
             await _dbContext.SaveChangesAsync();
 
-            Console.WriteLine(
-                $"[Notification] UserId: {userId}, UserName: {username}, Type: {notificationType}, Message: {notificationMessage}, Time: {acceptedNotification.CreatedAt:yyyy-MM-dd HH:mm:ss}"
-            );
-
             var acceptedNotificationDto = new NotificationDto
             {
-                UserId = userId,
-                Username = username,
-                ProfilePicture = profilePicture,
-                Text = notificationMessage,
-                Time = DateTime.UtcNow
+                Id = acceptedNotification.Id,
+                NotificationType = acceptedNotification.NotificationType,
+                Message = acceptedNotification.Message,
+                ActorUserId = acceptedNotification.ActorUserId,
+                ActorUserName = acceptedNotification.ActorUserName,
+                ActorProfilePicture = acceptedNotification.ActorProfilePicture,
+                RelatedEntityId = acceptedNotification.RelatedEntityId,
+                CreatedAt = acceptedNotification.CreatedAt,
+                TimeAgo = GetTimeAgo(acceptedNotification.CreatedAt)
             };
             await _notificationHub.Clients.User(userId).SendAsync("ReceiveNotification", acceptedNotificationDto);
 
             var groupNotificationDto = new NotificationDto
             {
-                UserId = userId,
-                Username = username,
-                ProfilePicture = profilePicture,
-                Text = $"{username} added a new post to the community!",
-                Time = DateTime.UtcNow
+                Id = 0, // إشعار عام للمجموعة، يمكن تجاهل Id أو وضع قيمة مناسبة
+                NotificationType = NotificationTypes.PostAccepted,
+                Message = $"{username} added a new post to the community!",
+                ActorUserId = userId,
+                ActorUserName = username,
+                ActorProfilePicture = profilePicture,
+                RelatedEntityId = post?.CommunityId,
+                CreatedAt = DateTime.UtcNow,
+                TimeAgo = GetTimeAgo(DateTime.UtcNow)
             };
 
             await _notificationHub.Clients.GroupExcept($"Community_{dto.CommunityId}", userId)
@@ -354,11 +367,15 @@ namespace OnlineLibrary.Web.Controllers
 
                 var notificationDto = new NotificationDto
                 {
-                    UserId = userId,
-                    Username = username,
-                    ProfilePicture = profilePicture,
-                    Text = $"{username} liked your post!",
-                    Time = DateTime.UtcNow
+                    Id = notification.Id,
+                    NotificationType = notification.NotificationType,
+                    Message = notification.Message,
+                    ActorUserId = notification.ActorUserId,
+                    ActorUserName = notification.ActorUserName,
+                    ActorProfilePicture = notification.ActorProfilePicture,
+                    RelatedEntityId = notification.RelatedEntityId,
+                    CreatedAt = notification.CreatedAt,
+                    TimeAgo = GetTimeAgo(notification.CreatedAt)
                 };
 
                 await _notificationHub.Clients.User(postOwnerId)
@@ -384,18 +401,35 @@ namespace OnlineLibrary.Web.Controllers
             if (userId != postOwnerId)
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
+                var notification = new Notification
+                {
+                    UserId = postOwnerId,
+                    ActorUserId = userId,
+                    ActorUserName = username,
+                    ActorProfilePicture = profilePicture,
+                    NotificationType = NotificationTypes.PostUnlike,
+                    Message = $"{username} unliked your post!",
+                    RelatedEntityId = postId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _dbContext.Notifications.Add(notification);
+                await _dbContext.SaveChangesAsync();
+
                 var notificationDto = new NotificationDto
                 {
-                    UserId = userId,
-                    Username = username,
-                    ProfilePicture = profilePicture,
-                    Text = $"{username} unliked your post!",
-                    Time = DateTime.UtcNow
+                    Id = notification.Id,
+                    NotificationType = notification.NotificationType,
+                    Message = notification.Message,
+                    ActorUserId = notification.ActorUserId,
+                    ActorUserName = notification.ActorUserName,
+                    ActorProfilePicture = notification.ActorProfilePicture,
+                    RelatedEntityId = notification.RelatedEntityId,
+                    CreatedAt = notification.CreatedAt,
+                    TimeAgo = GetTimeAgo(notification.CreatedAt)
                 };
 
                 await _notificationHub.Clients.User(postOwnerId)
                     .SendAsync("ReceiveNotification", notificationDto);
-                Console.WriteLine($"Sending notification to {postOwnerId}: {notificationDto.Text}");
             }
 
             return Ok();
@@ -444,11 +478,15 @@ namespace OnlineLibrary.Web.Controllers
 
             var notificationDto = new NotificationDto
             {
-                UserId = userId,
-                Username = username,
-                ProfilePicture = profilePicture,
-                Text = $"{username} commented on your post!",
-                Time = DateTime.UtcNow
+                Id = notification.Id,
+                NotificationType = notification.NotificationType,
+                Message = notification.Message,
+                ActorUserId = notification.ActorUserId,
+                ActorUserName = notification.ActorUserName,
+                ActorProfilePicture = notification.ActorProfilePicture,
+                RelatedEntityId = notification.RelatedEntityId,
+                CreatedAt = notification.CreatedAt,
+                TimeAgo = GetTimeAgo(notification.CreatedAt)
             };
 
             await _notificationHub.Clients.User(postOwnerId)
@@ -465,53 +503,6 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(comments);
         }
 
-        [HttpPost("posts/{postId}/share")]
-        [Authorize]
-        public async Task<IActionResult> SharePost(long postId, [FromQuery] long? communityId)
-        {
-            var userId = GetUserId();
-            string postOwnerId = await GetPostOwnerId(postId);
-            if (string.IsNullOrEmpty(postOwnerId))
-            {
-                return NotFound("Post not found");
-            }
-
-            await _communityService.SharePostAsync(postId, userId, communityId);
-
-            if (userId != postOwnerId)
-            {
-                var (username, profilePicture) = await GetUserDetails(userId);
-
-                var notification = new Notification
-                {
-                    UserId = postOwnerId,
-                    ActorUserId = userId,
-                    ActorUserName = username,
-                    ActorProfilePicture = profilePicture,
-                    NotificationType = NotificationTypes.PostShare,
-                    Message = $"{username} shared your post!",
-                    RelatedEntityId = postId,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _dbContext.Notifications.Add(notification);
-                await _dbContext.SaveChangesAsync();
-
-                var notificationDto = new NotificationDto
-                {
-                    UserId = userId,
-                    Username = username,
-                    ProfilePicture = profilePicture,
-                    Text = $"{username} shared your post!",
-                    Time = DateTime.UtcNow
-                };
-
-                await _notificationHub.Clients.User(postOwnerId)
-                    .SendAsync("ReceiveNotification", notificationDto);
-                Console.WriteLine($"Sending notification to {postOwnerId}: {notificationDto.Text}");
-            }
-
-            return Ok();
-        }
 
         [HttpPost("moderators/assign")]
         [Authorize(Roles = "Admin")]
@@ -521,18 +512,35 @@ namespace OnlineLibrary.Web.Controllers
             await _communityService.AssignModeratorAsync(dto, adminId);
 
             var (username, profilePicture) = await GetUserDetails(dto.UserId);
-            var notification = new NotificationDto
+            var notification = new Notification
             {
-                UserId = adminId,
-                Username = username,
-                ProfilePicture = profilePicture,
-                Text = $"{username} has been assigned as a moderator in the community!",
-                Time = DateTime.UtcNow
+                UserId = dto.UserId,
+                ActorUserId = adminId,
+                ActorUserName = username,
+                ActorProfilePicture = profilePicture,
+                NotificationType = "ModeratorAssigned",
+                Message = $"{username} has been assigned as a moderator in the community!",
+                RelatedEntityId = dto.CommunityId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Notifications.Add(notification);
+            await _dbContext.SaveChangesAsync();
+
+            var notificationDto = new NotificationDto
+            {
+                Id = notification.Id,
+                NotificationType = notification.NotificationType,
+                Message = notification.Message,
+                ActorUserId = notification.ActorUserId,
+                ActorUserName = notification.ActorUserName,
+                ActorProfilePicture = notification.ActorProfilePicture,
+                RelatedEntityId = notification.RelatedEntityId,
+                CreatedAt = notification.CreatedAt,
+                TimeAgo = GetTimeAgo(notification.CreatedAt)
             };
 
-            await _notificationHub.Clients.GroupExcept($"Community_{dto.CommunityId}", adminId)
-                .SendAsync("ReceiveNotification", notification);
-            Console.WriteLine($"Sending notification to group Community_{dto.CommunityId}: {notification.Text}");
+            await _notificationHub.Clients.User(dto.UserId)
+                .SendAsync("ReceiveNotification", notificationDto);
 
             return Ok();
         }
@@ -562,18 +570,35 @@ namespace OnlineLibrary.Web.Controllers
             await _communityService.RemoveModeratorAsync(communityId, userId, adminId);
 
             var (username, profilePicture) = await GetUserDetails(userId);
-            var notification = new NotificationDto
+            var notification = new Notification
             {
-                UserId = adminId,
-                Username = username,
-                ProfilePicture = profilePicture,
-                Text = $"{username} has been removed as a moderator from the community!",
-                Time = DateTime.UtcNow
+                UserId = userId,
+                ActorUserId = adminId,
+                ActorUserName = username,
+                ActorProfilePicture = profilePicture,
+                NotificationType = "ModeratorRemoved",
+                Message = $"{username} has been removed as a moderator from the community!",
+                RelatedEntityId = communityId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Notifications.Add(notification);
+            await _dbContext.SaveChangesAsync();
+
+            var notificationDto = new NotificationDto
+            {
+                Id = notification.Id,
+                NotificationType = notification.NotificationType,
+                Message = notification.Message,
+                ActorUserId = notification.ActorUserId,
+                ActorUserName = notification.ActorUserName,
+                ActorProfilePicture = notification.ActorProfilePicture,
+                RelatedEntityId = notification.RelatedEntityId,
+                CreatedAt = notification.CreatedAt,
+                TimeAgo = GetTimeAgo(notification.CreatedAt)
             };
 
-            await _notificationHub.Clients.GroupExcept($"Community_{communityId}", adminId)
-                .SendAsync("ReceiveNotification", notification);
-            Console.WriteLine($"Sending notification to group Community_{communityId}: {notification.Text}");
+            await _notificationHub.Clients.User(userId)
+                .SendAsync("ReceiveNotification", notificationDto);
 
             return Ok();
         }

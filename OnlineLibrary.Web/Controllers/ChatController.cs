@@ -12,6 +12,7 @@ using OnlineLibrary.Service.UserProfileService.Dtos;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -37,6 +38,18 @@ namespace OnlineLibrary.Web.Controllers
             _dbContext = dbContext;
         }
 
+        private string GetTimeAgo(DateTime createdAt)
+        {
+            var minutes = (int)(DateTime.UtcNow - createdAt).TotalMinutes;
+            if (minutes < 60)
+                return $"{minutes} min ago";
+            var hours = (int)(DateTime.UtcNow - createdAt).TotalHours;
+            if (hours < 24)
+                return $"{hours} h ago";
+            var days = (int)(DateTime.UtcNow - createdAt).TotalDays;
+            return $"{days} d ago";
+        }
+
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageDto messageDto)
         {
@@ -44,7 +57,6 @@ namespace OnlineLibrary.Web.Controllers
             if (string.IsNullOrEmpty(senderId) || string.IsNullOrEmpty(messageDto.ReceiverId))
                 return BadRequest("Sender or Receiver ID is missing.");
 
-            // جلب بيانات المرسل من قاعدة البيانات
             var sender = await _dbContext.Users
                 .Include(u => u.UserProfile)
                 .FirstOrDefaultAsync(u => u.Id == senderId);
@@ -61,22 +73,38 @@ namespace OnlineLibrary.Web.Controllers
             await _unitOfWork.Repository<ChatMessage>().AddAsync(message);
             await _unitOfWork.CountAsync();
 
-            // إنشاء إشعار بعد حفظ الرسالة
             var notification = new Notification
             {
-                UserId = messageDto.ReceiverId, 
-                ActorUserId = senderId, 
-                ActorUserName = sender.UserName, 
-                ActorProfilePicture = sender.UserProfile?.ProfilePhoto ?? "default_profile.jpg", 
+                UserId = messageDto.ReceiverId,
+                ActorUserId = senderId,
+                ActorUserName = sender.UserName,
+                ActorProfilePicture = sender.UserProfile?.ProfilePhoto ?? "default_profile.jpg",
                 NotificationType = NotificationTypes.MessageReceived,
                 Message = $"{sender.UserName} sent you a new message.",
-                RelatedEntityId = message.Id, 
+                RelatedEntityId = message.Id,
                 CreatedAt = DateTime.UtcNow
             };
             _dbContext.Notifications.Add(notification);
             await _dbContext.SaveChangesAsync();
 
-            await _chatHub.Clients.User(messageDto.ReceiverId).SendAsync("ReceiveMessage", senderId, message.Message);
+            var notificationDto = new NotificationDto
+            {
+                Id = notification.Id,
+                NotificationType = notification.NotificationType,
+                Message = notification.Message,
+                ActorUserId = notification.ActorUserId,
+                ActorUserName = notification.ActorUserName,
+                ActorProfilePicture = notification.ActorProfilePicture,
+                RelatedEntityId = notification.RelatedEntityId,
+                CreatedAt = notification.CreatedAt,
+                TimeAgo = GetTimeAgo(notification.CreatedAt)
+            };
+
+            await _chatHub.Clients.User(messageDto.ReceiverId)
+                .SendAsync("ReceiveNotification", notificationDto);
+
+            await _chatHub.Clients.User(messageDto.ReceiverId)
+                .SendAsync("ReceiveMessage", senderId, message.Message);
 
             return Ok(new { MessageId = message.Id });
         }

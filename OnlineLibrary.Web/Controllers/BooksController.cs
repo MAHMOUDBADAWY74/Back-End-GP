@@ -51,6 +51,18 @@ namespace OnlineLibrary.Web.Controllers
             return (username, profilePicture);
         }
 
+        private string GetTimeAgo(DateTime createdAt)
+        {
+            var minutes = (int)(DateTime.UtcNow - createdAt).TotalMinutes;
+            if (minutes < 60)
+                return $"{minutes} min ago";
+            var hours = (int)(DateTime.UtcNow - createdAt).TotalHours;
+            if (hours < 24)
+                return $"{hours} h ago";
+            var days = (int)(DateTime.UtcNow - createdAt).TotalDays;
+            return $"{days} d ago";
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAllBooks()
         {
@@ -88,18 +100,23 @@ namespace OnlineLibrary.Web.Controllers
 
             var userId = GetUserId();
             var (username, profilePicture) = await GetUserDetails(userId);
+
             var notification = new NotificationDto
             {
-                UserId = userId,
-                Username = username,
-                ProfilePicture = profilePicture,
-                Text = $"A new book '{addBookDetailsDto.Title}' has been added by {username}!",
-                Time = DateTime.UtcNow
+                Id = 0, // لا يوجد Id حقيقي هنا، يمكن تجاهله أو تعيينه لاحقاً إذا لزم الأمر
+                NotificationType = "BookAdded",
+                Message = $"A new book '{addBookDetailsDto.Title}' has been added by {username}!",
+                ActorUserId = userId,
+                ActorUserName = username,
+                ActorProfilePicture = profilePicture,
+                RelatedEntityId = null,
+                CreatedAt = DateTime.UtcNow,
+                TimeAgo = GetTimeAgo(DateTime.UtcNow)
             };
 
             await _notificationHub.Clients.GroupExcept("AllUsers", userId)
                 .SendAsync("ReceiveNotification", notification);
-            Console.WriteLine($"Sending notification to all users: {notification.Text}");
+            Console.WriteLine($"Sending notification to all users: {notification.Message}");
 
             return Ok("Book added successfully.");
         }
