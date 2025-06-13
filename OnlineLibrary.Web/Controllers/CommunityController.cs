@@ -104,9 +104,24 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<ActionResult<IEnumerable<CommunityDto>>> GetAllCommunities()
         {
             var userId = GetUserId();
-            var communities = await _communityService.GetAllCommunitiesAsync(userId);
+            var communities = (await _communityService.GetAllCommunitiesAsync(userId)).ToList();
+
+            var communityIds = communities.Select(c => c.Id).ToList();
+            var images = await _dbContext.CommunityImages
+                .Where(i => communityIds.Contains(i.CommunityId))
+                .GroupBy(i => i.CommunityId)
+                .Select(g => g.OrderByDescending(i => i.CreatedAt).FirstOrDefault())
+                .ToListAsync();
+
+            foreach (var community in communities)
+            {
+                var image = images.FirstOrDefault(img => img.CommunityId == community.Id);
+                community.ImageUrl = image?.ImageUrl;
+            }
+
             return Ok(communities);
         }
+
 
         [HttpGet("{id}")]
         [Authorize]
@@ -124,12 +139,20 @@ namespace OnlineLibrary.Web.Controllers
             if (community == null)
                 return NotFound();
 
+            var image = await _dbContext.CommunityImages
+                .Where(i => i.CommunityId == id)
+                .OrderByDescending(i => i.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            community.ImageUrl = image?.ImageUrl;
+
             var userId = GetUserId();
             var communityMembers = await _communityService.GetCommunityMembersAsync(id);
             community.IsMember = communityMembers.Any(m => m.UserId == userId);
 
             return Ok(community);
         }
+
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
