@@ -126,10 +126,12 @@ namespace OnlineLibrary.Web.Controllers
             var userId = GetUserId();
             try
             {
+                // Create the community first
                 var community = await _communityService.CreateCommunityAsync(dto, userId);
 
                 string? imageUrl = null;
 
+                // If an image is uploaded
                 if (dto.ImageFile != null && dto.ImageFile.Length > 0)
                 {
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "community-images");
@@ -160,6 +162,7 @@ namespace OnlineLibrary.Web.Controllers
                     imageUrl = null;
                 }
 
+                // Add image path to the response DTO
                 var response = new CommunityDto
                 {
                     Id = community.Id,
@@ -181,8 +184,6 @@ namespace OnlineLibrary.Web.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
-
-
 
         [HttpPost("{communityId}/join")]
         [Authorize]
@@ -302,10 +303,6 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(post);
         }
 
-
-
-
-
         [HttpGet("{communityId}/posts")]
         [Authorize(Roles = "Receiver,Admin,Moderator,User")]
         public async Task<ActionResult<IEnumerable<CommunityPostDto>>> GetCommunityPosts(long communityId)
@@ -341,7 +338,6 @@ namespace OnlineLibrary.Web.Controllers
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
 
-                // حفظ الإشعار في الداتابيز
                 var notification = new Notification
                 {
                     UserId = postOwnerId,
@@ -356,7 +352,6 @@ namespace OnlineLibrary.Web.Controllers
                 _dbContext.Notifications.Add(notification);
                 await _dbContext.SaveChangesAsync();
 
-                // إشعار SignalR
                 var notificationDto = new NotificationDto
                 {
                     UserId = userId,
@@ -385,8 +380,6 @@ namespace OnlineLibrary.Web.Controllers
             }
 
             await _communityService.UnlikePostAsync(postId, userId);
-
-            // يمكنك إضافة إشعار في الداتابيز هنا إذا أردت
 
             if (userId != postOwnerId)
             {
@@ -418,7 +411,7 @@ namespace OnlineLibrary.Web.Controllers
             {
                 return BadRequest(new
                 {
-                    error = "تم رفض التعليق بسبب محتوى غير مناسب",
+                    error = "Your comment was rejected due to inappropriate content.",
                     details = moderationResult.ReasonMessage,
                     category = moderationResult.Category
                 });
@@ -435,7 +428,6 @@ namespace OnlineLibrary.Web.Controllers
 
             var (username, profilePicture) = await GetUserDetails(userId);
 
-            // حفظ الإشعار في الداتابيز
             var notification = new Notification
             {
                 UserId = postOwnerId,
@@ -450,7 +442,6 @@ namespace OnlineLibrary.Web.Controllers
             _dbContext.Notifications.Add(notification);
             await _dbContext.SaveChangesAsync();
 
-            // إشعار SignalR
             var notificationDto = new NotificationDto
             {
                 UserId = userId,
@@ -491,7 +482,6 @@ namespace OnlineLibrary.Web.Controllers
             {
                 var (username, profilePicture) = await GetUserDetails(userId);
 
-                // حفظ الإشعار في الداتابيز
                 var notification = new Notification
                 {
                     UserId = postOwnerId,
@@ -506,7 +496,6 @@ namespace OnlineLibrary.Web.Controllers
                 _dbContext.Notifications.Add(notification);
                 await _dbContext.SaveChangesAsync();
 
-                // إشعار SignalR
                 var notificationDto = new NotificationDto
                 {
                     UserId = userId,
@@ -635,7 +624,7 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<IActionResult> UploadCommunityImage(long communityId, IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return BadRequest("يرجى اختيار صورة صحيحة.");
+                return BadRequest("Please select a valid image.");
 
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "community-images");
             if (!Directory.Exists(uploadsFolder))
@@ -668,11 +657,11 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<IActionResult> UpdateCommunityImage(long communityId, IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return BadRequest("يرجى اختيار صورة صحيحة.");
+                return BadRequest("Please select a valid image.");
 
             var image = await _dbContext.CommunityImages.FirstOrDefaultAsync(i => i.CommunityId == communityId);
             if (image == null)
-                return NotFound("الصورة غير موجودة.");
+                return NotFound("Image not found.");
 
             var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
             if (System.IO.File.Exists(oldFilePath))
@@ -703,7 +692,7 @@ namespace OnlineLibrary.Web.Controllers
         {
             var image = await _dbContext.CommunityImages.FindAsync(imageId);
             if (image == null)
-                return NotFound("الصورة غير موجودة.");
+                return NotFound("Image not found.");
 
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
             if (System.IO.File.Exists(filePath))
@@ -712,7 +701,7 @@ namespace OnlineLibrary.Web.Controllers
             _dbContext.CommunityImages.Remove(image);
             await _dbContext.SaveChangesAsync();
 
-            return Ok(new { message = "تم حذف الصورة بنجاح." });
+            return Ok(new { message = "Image deleted successfully." });
         }
     }
 }

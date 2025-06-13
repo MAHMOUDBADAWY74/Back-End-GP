@@ -56,7 +56,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                 throw new ArgumentNullException(nameof(_perspectiveApiKey), "Perspective API Key is required.");
             }
 
-            _httpClient = new HttpClient(); 
+            _httpClient = new HttpClient();
             _logger.LogInformation("ContentModerationService initialized.");
         }
 
@@ -87,7 +87,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                     {
                         IsAppropriate = false,
                         Category = "KeywordDetected",
-                        ReasonMessage = $"تم اكتشاف كلمة مسيئة: {pattern.Key}"
+                        ReasonMessage = $"Offensive word detected: {pattern.Key}"
                     };
                 }
             }
@@ -101,7 +101,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                     {
                         IsAppropriate = false,
                         Category = "KeywordDetected",
-                        ReasonMessage = $"تم اكتشاف كلمة مسيئة: {keyword}"
+                        ReasonMessage = $"Offensive word detected: {keyword}"
                     };
                 }
             }
@@ -141,7 +141,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                 {
                     IsAppropriate = false,
                     Category = "ServiceError",
-                    ReasonMessage = "حدث خطأ في خدمة مراقبة المحتوى. يرجى المحاولة لاحقًا."
+                    ReasonMessage = "An error occurred in the content moderation service. Please try again later."
                 };
             }
             catch (Exception ex)
@@ -159,7 +159,7 @@ namespace OnlineLibrary.Service.ContentModerationService
             {
                 Content = content
             };
-            request.Headers.Add("Authorization", $"Bearer {_hfApiKey}"); 
+            request.Headers.Add("Authorization", $"Bearer {_hfApiKey}");
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -175,7 +175,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                 {
                     IsAppropriate = false,
                     Category = "ServiceError",
-                    ReasonMessage = "فشل تحليل استجابة الـ API."
+                    ReasonMessage = "Failed to analyze API response."
                 };
             }
 
@@ -202,7 +202,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                     {
                         IsAppropriate = false,
                         Category = label,
-                        ReasonMessage = GetReasonMessage(label) + $" (احتمالية: {score:P2})"
+                        ReasonMessage = GetReasonMessage(label) + $" (Probability: {score:P2})"
                     };
                 }
             }
@@ -243,7 +243,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                 {
                     IsAppropriate = false,
                     Category = "ServiceError",
-                    ReasonMessage = "فشل تحليل استجابة Perspective API."
+                    ReasonMessage = "Failed to analyze Perspective API response."
                 };
             }
 
@@ -272,7 +272,7 @@ namespace OnlineLibrary.Service.ContentModerationService
                 {
                     IsAppropriate = false,
                     Category = category,
-                    ReasonMessage = GetReasonMessage(category) + $" (احتمالية: {score:P2})"
+                    ReasonMessage = GetReasonMessage(category) + $" (Probability: {score:P2})"
                 };
             }
 
@@ -283,18 +283,18 @@ namespace OnlineLibrary.Service.ContentModerationService
         {
             return category switch
             {
-                "S" => "محتوى جنسي محتمل",
-                "H" => "محتوى كراهية محتمل",
-                "V" => "محتوى عنيف محتمل",
-                "HR" => "محتوى مضايقة محتمل",
-                "SH" => "محتوى إيذاء الذات محتمل",
-                "S3" => "محتوى جنسي يخص قاصرين محتمل",
-                "H2" => "محتوى كراهية أو تهديد محتمل",
-                "V2" => "محتوى عنيف صريح محتمل",
-                "KeywordDetected" => "تم اكتشاف كلمة مسيئة",
-                "TOXICITY" => "محتوى سام محتمل",
-                "INSULT" => "محتوى إهانة محتمل",
-                _ => "محتوى غير مناسب"
+                "S" => "Potential sexual content",
+                "H" => "Potential hate content",
+                "V" => "Potential violent content",
+                "HR" => "Potential harassment content",
+                "SH" => "Potential self-harm content",
+                "S3" => "Potential child sexual content",
+                "H2" => "Potential hate or threat content",
+                "V2" => "Potential explicit violent content",
+                "KeywordDetected" => "Offensive word detected",
+                "TOXICITY" => "Potential toxic content",
+                "INSULT" => "Potential insult content",
+                _ => "Inappropriate content"
             };
         }
     }
