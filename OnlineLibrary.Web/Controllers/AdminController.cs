@@ -5,6 +5,8 @@ using OnlineLibrary.Service.AdminService.Dtos;
 using OnlineLibrary.Service.CommunityService;
 using OnlineLibrary.Service.HandleResponse;
 using OnlineLibrary.Service.UserService;
+using OnlineLibrary.Data.Contexts;
+using OnlineLibrary.Data.Entities;
 using System.Threading.Tasks;
 
 namespace OnlineLibrary.Web.Controllers
@@ -17,12 +19,18 @@ namespace OnlineLibrary.Web.Controllers
         private readonly IAdminService _adminService;
         private readonly IUserService _userService;
         private readonly ICommunityService _communityService;
+        private readonly OnlineLibraryIdentityDbContext _dbContext;
 
-        public AdminController(IAdminService adminService, IUserService userService, ICommunityService communityService)
+        public AdminController(
+            IAdminService adminService,
+            IUserService userService,
+            ICommunityService communityService,
+            OnlineLibraryIdentityDbContext dbContext)
         {
             _adminService = adminService;
             _userService = userService;
             _communityService = communityService;
+            _dbContext = dbContext;
         }
 
         [HttpPut("users/{userId}/roles")]
@@ -163,6 +171,32 @@ namespace OnlineLibrary.Web.Controllers
             {
                 return BadRequest(new UserException(400, ex.Message));
             }
+        }
+
+        [HttpPost("ban-site/{userId}")]
+        public async Task<IActionResult> BanUserSiteWide(string userId)
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            user.IsBlocked = true;
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "User blocked site-wide." });
+        }
+
+        [HttpPost("unban-site/{userId}")]
+        public async Task<IActionResult> UnbanUserSiteWide(string userId)
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            user.IsBlocked = false;
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "User unblocked site-wide." });
         }
     }
 }

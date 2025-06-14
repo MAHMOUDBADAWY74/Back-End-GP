@@ -104,7 +104,15 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<ActionResult<IEnumerable<CommunityDto>>> GetAllCommunities()
         {
             var userId = GetUserId();
-            var communities = (await _communityService.GetAllCommunitiesAsync(userId)).ToList();
+
+            var bannedCommunityIds = await _dbContext.CommunityBans
+                .Where(b => b.UserId == userId)
+                .Select(b => b.CommunityId)
+                .ToListAsync();
+
+            var communities = (await _communityService.GetAllCommunitiesAsync(userId))
+                .Where(c => !bannedCommunityIds.Contains(c.Id))
+                .ToList();
 
             var communityIds = communities.Select(c => c.Id).ToList();
             var images = await _dbContext.CommunityImages
@@ -126,6 +134,13 @@ namespace OnlineLibrary.Web.Controllers
         [Authorize]
         public async Task<ActionResult<CommunityDto>> GetCommunity(long id)
         {
+            var userId = GetUserId();
+
+            var isBanned = await _dbContext.CommunityBans
+                .AnyAsync(b => b.CommunityId == id && b.UserId == userId);
+            if (isBanned)
+                return Forbid("You are banned from this community.");
+
             var visit = new Visit
             {
                 VisitDate = DateTime.UtcNow,
@@ -145,7 +160,6 @@ namespace OnlineLibrary.Web.Controllers
 
             community.ImageUrl = image?.ImageUrl;
 
-            var userId = GetUserId();
             var communityMembers = await _communityService.GetCommunityMembersAsync(id);
             community.IsMember = communityMembers.Any(m => m.UserId == userId);
 
@@ -310,13 +324,17 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(new { message = "Community removed successfully." });
         }
 
-
-
         [HttpPost("{communityId}/join")]
         [Authorize]
         public async Task<IActionResult> JoinCommunity(long communityId)
         {
             var userId = GetUserId();
+
+            var isBanned = await _dbContext.CommunityBans
+                .AnyAsync(b => b.CommunityId == communityId && b.UserId == userId);
+            if (isBanned)
+                return Forbid("You are banned from this community.");
+
             await _communityService.JoinCommunityAsync(communityId, userId);
             return Ok();
         }
@@ -336,6 +354,12 @@ namespace OnlineLibrary.Web.Controllers
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             var userId = GetUserId();
+
+            var isBanned = await _dbContext.CommunityBans
+                .AnyAsync(b => b.CommunityId == dto.CommunityId && b.UserId == userId);
+            if (isBanned)
+                return Forbid("You are banned from this community.");
+
             var (username, profilePicture) = await GetUserDetails(userId);
 
             var moderationResult = await _contentModerationService.ModerateTextAsync(dto.Content);
@@ -439,6 +463,12 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<ActionResult<IEnumerable<CommunityPostDto>>> GetCommunityPosts(long communityId)
         {
             var userId = GetUserId();
+
+            var isBanned = await _dbContext.CommunityBans
+                .AnyAsync(b => b.CommunityId == communityId && b.UserId == userId);
+            if (isBanned)
+                return Forbid("You are banned from this community.");
+
             var posts = await _communityService.GetCommunityPostsAsync(communityId, userId);
             return Ok(posts);
         }
@@ -738,12 +768,92 @@ namespace OnlineLibrary.Web.Controllers
             return Ok();
         }
 
+        [HttpGet("{communityId}/members")]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> GetCommunityMembers(long communityId)
+        {
+            var userId = GetUserId();
+            var user = await _userManager.FindByIdAsync(userId);
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            var isModerator = await _userManager.IsInRoleAsync(user, "Moderator");
+
+            if (isModerator && !isAdmin)
+            {
+                var isCommunityModerator = await _dbContext.CommunityModerators
+                    .AnyAsync(m => m.CommunityId == communityId && m.ApplicationUserId == userId);
+
+                if (!isCommunityModerator)
+                    return Forbid("You are not a moderator in this community.");
+            }
+
+            var members = await _dbContext.CommunityMembers
+                .Where(m => m.CommunityId == communityId)
+                .Join(_dbContext.Users, m => m.UserId, u => u.Id, (m, u) => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.firstName,
+                    u.LastName
+                })
+                .ToListAsync();
+
+            return Ok(members);
+        }
+
         [HttpPost("{communityId}/ban/{userId}")]
         [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> BanUser(long communityId, string userId)
         {
             var requesterId = GetUserId();
+            var requester = await _userManager.FindByIdAsync(requesterId);
+
+            var isAdmin = await _userManager.IsInRoleAsync(requester, "Admin");
+            if (!isAdmin)
+            {
+                var isCommunityModerator = await _dbContext.CommunityModerators
+                    .AnyAsync(m => m.CommunityId == communityId && m.ApplicationUserId == requesterId);
+                if (!isCommunityModerator)
+                    return Forbid("You are not a moderator in this community.");
+
+                var isUserInCommunity = await _dbContext.CommunityMembers
+                    .AnyAsync(m => m.CommunityId == communityId && m.UserId == userId);
+                if (!isUserInCommunity)
+                    return Forbid("You can only ban users in your community.");
+            }
+
             await _communityService.BanUserAsync(communityId, userId, requesterId);
+
+            var community = await _dbContext.Communities.FindAsync(communityId);
+            var (modName, modProfile) = await GetUserDetails(requesterId);
+            var notification = new Notification
+            {
+                UserId = userId,
+                ActorUserId = requesterId,
+                ActorUserName = modName,
+                ActorProfilePicture = modProfile,
+                NotificationType = "CommunityBan",
+                Message = $"You have been banned from the community \"{community?.Name}\".",
+                RelatedEntityId = communityId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Notifications.Add(notification);
+            await _dbContext.SaveChangesAsync();
+
+            var notificationDto = new NotificationDto
+            {
+                Id = notification.Id,
+                NotificationType = notification.NotificationType,
+                Message = notification.Message,
+                ActorUserId = notification.ActorUserId,
+                ActorUserName = notification.ActorUserName,
+                ActorProfilePicture = notification.ActorProfilePicture,
+                RelatedEntityId = notification.RelatedEntityId,
+                CreatedAt = notification.CreatedAt,
+                TimeAgo = GetTimeAgo(notification.CreatedAt)
+            };
+            await _notificationHub.Clients.User(userId).SendAsync("ReceiveNotification", notificationDto);
+
             return Ok();
         }
 
@@ -752,7 +862,54 @@ namespace OnlineLibrary.Web.Controllers
         public async Task<IActionResult> UnbanUser(long communityId, string userId)
         {
             var requesterId = GetUserId();
+            var requester = await _userManager.FindByIdAsync(requesterId);
+
+            var isAdmin = await _userManager.IsInRoleAsync(requester, "Admin");
+            if (!isAdmin)
+            {
+                var isCommunityModerator = await _dbContext.CommunityModerators
+                    .AnyAsync(m => m.CommunityId == communityId && m.ApplicationUserId == requesterId);
+                if (!isCommunityModerator)
+                    return Forbid("You are not a moderator in this community.");
+
+                var isUserInCommunity = await _dbContext.CommunityMembers
+                    .AnyAsync(m => m.CommunityId == communityId && m.UserId == userId);
+                if (!isUserInCommunity)
+                    return Forbid("You can only unban users in your community.");
+            }
+
             var result = await _communityService.UnbanUserAsync(communityId, requesterId, userId);
+
+            var community = await _dbContext.Communities.FindAsync(communityId);
+            var (modName, modProfile) = await GetUserDetails(requesterId);
+            var notification = new Notification
+            {
+                UserId = userId,
+                ActorUserId = requesterId,
+                ActorUserName = modName,
+                ActorProfilePicture = modProfile,
+                NotificationType = "CommunityUnban",
+                Message = $"You have been unbanned from the community \"{community?.Name}\".",
+                RelatedEntityId = communityId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Notifications.Add(notification);
+            await _dbContext.SaveChangesAsync();
+
+            var notificationDto = new NotificationDto
+            {
+                Id = notification.Id,
+                NotificationType = notification.NotificationType,
+                Message = notification.Message,
+                ActorUserId = notification.ActorUserId,
+                ActorUserName = notification.ActorUserName,
+                ActorProfilePicture = notification.ActorProfilePicture,
+                RelatedEntityId = notification.RelatedEntityId,
+                CreatedAt = notification.CreatedAt,
+                TimeAgo = GetTimeAgo(notification.CreatedAt)
+            };
+            await _notificationHub.Clients.User(userId).SendAsync("ReceiveNotification", notificationDto);
+
             return Ok(new { Unbanned = result });
         }
 

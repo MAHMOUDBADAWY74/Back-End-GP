@@ -31,6 +31,10 @@ namespace OnlineLibrary.Data.Contexts
         public DbSet<Visit> Visits { get; set; }
         public DbSet<CommunityImage> CommunityImages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<CommunityModerator> CommunityModerators { get; set; }
+        public DbSet<CommunityBan> CommunityBans { get; set; }
+
+
 
 
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
@@ -73,6 +77,18 @@ namespace OnlineLibrary.Data.Contexts
                 .WithMany()
                 .HasForeignKey(cm => cm.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<CommunityBan>()
+                .HasOne(cb => cb.Community)
+                .WithMany()
+                .HasForeignKey(cb => cb.CommunityId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder.Entity<CommunityBan>()
+                .HasOne(cb => cb.User)
+                .WithMany()
+                .HasForeignKey(cb => cb.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

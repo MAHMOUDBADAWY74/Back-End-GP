@@ -26,6 +26,29 @@ namespace OnlineLibrary.Web.Controllers
         {
             try
             {
+                var user = _dbContext.Users.FirstOrDefault(u => u.Email == input.Email);
+                if (user == null)
+                {
+                    return BadRequest(new
+                    {
+                        errors = new[] { "Invalid login attempt." },
+                        details = (string)null,
+                        statusCode = 400,
+                        message = "Bad Request"
+                    });
+                }
+
+                if (user.IsBlocked)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, new
+                    {
+                        errors = new[] { "Your account has been blocked by the administration. Please contact support if you believe this is a mistake." },
+                        details = (string)null,
+                        statusCode = 403,
+                        message = "Account Blocked"
+                    });
+                }
+
                 var result = await _userService.Login(input);
                 if (result == null)
                 {
@@ -58,6 +81,9 @@ namespace OnlineLibrary.Web.Controllers
                 });
             }
         }
+
+
+
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto input)
