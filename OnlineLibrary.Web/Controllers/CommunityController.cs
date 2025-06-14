@@ -16,6 +16,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.Data.SqlClient;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -105,14 +106,27 @@ namespace OnlineLibrary.Web.Controllers
         {
             var userId = GetUserId();
 
-            var bannedCommunityIds = await _dbContext.CommunityBans
-                .Where(b => b.UserId == userId)
-                .Select(b => b.CommunityId)
-                .ToListAsync();
+            var bannedCommunityIds = new List<long>();
+            try
+            {
+                bannedCommunityIds = await _dbContext.CommunityBans
+                    .Where(b => b.UserId == userId)
+                    .Select(b => b.CommunityId)
+                    .ToListAsync();
+            }
+            catch (SqlException ex) when (ex.Number == 208)
+            {
+                // تجاهل الخطأ لو الجدول مش موجود (لكن موجود دلوقتي)
+            }
 
             var communities = (await _communityService.GetAllCommunitiesAsync(userId))
                 .Where(c => !bannedCommunityIds.Contains(c.Id))
                 .ToList();
+
+            if (!communities.Any())
+            {
+                return NotFound("No communities found in the database. Please add some communities first.");
+            }
 
             var communityIds = communities.Select(c => c.Id).ToList();
             var images = await _dbContext.CommunityImages
@@ -818,7 +832,13 @@ namespace OnlineLibrary.Web.Controllers
                 var isCommunityModerator = await _dbContext.CommunityModerators
                     .AnyAsync(m => m.CommunityId == communityId && m.ApplicationUserId == requesterId);
                 if (!isCommunityModerator)
-                    return Forbid("You are not a moderator in this community.");
+                {
+                    var requesterMember = await _dbContext.CommunityMembers
+                        .FirstOrDefaultAsync(m => m.CommunityId == communityId && m.UserId == requesterId);
+                    var isModerator = requesterMember?.IsModerator ?? false;
+                    if (!isModerator)
+                        return Forbid("You are not a moderator in this community.");
+                }
 
                 var isUserInCommunity = await _dbContext.CommunityMembers
                     .AnyAsync(m => m.CommunityId == communityId && m.UserId == userId);

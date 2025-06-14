@@ -12,8 +12,8 @@ using OnlineLibrary.Data.Contexts;
 namespace OnlineLibrary.Data.Migrations
 {
     [DbContext(typeof(OnlineLibraryIdentityDbContext))]
-    [Migration("20250612031029_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250614221814_AddCommunityBanTable")]
+    partial class AddCommunityBanTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -301,9 +301,6 @@ namespace OnlineLibrary.Data.Migrations
                     b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Text")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
@@ -378,6 +375,40 @@ namespace OnlineLibrary.Data.Migrations
                     b.HasIndex("AdminId");
 
                     b.ToTable("Communities");
+                });
+
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityBan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("BannedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("BannedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("CommunityId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CommunityBan");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityImage", b =>
@@ -465,7 +496,7 @@ namespace OnlineLibrary.Data.Migrations
 
                     b.HasIndex("CommunityId");
 
-                    b.ToTable("CommunityModerator");
+                    b.ToTable("CommunityModerators");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityPost", b =>
@@ -1055,6 +1086,25 @@ namespace OnlineLibrary.Data.Migrations
                         .HasForeignKey("AdminId");
 
                     b.Navigation("Admin");
+                });
+
+            modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityBan", b =>
+                {
+                    b.HasOne("OnlineLibrary.Data.Entities.Community", "Community")
+                        .WithMany()
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineLibrary.Data.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Community");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Data.Entities.CommunityImage", b =>

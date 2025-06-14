@@ -36,7 +36,6 @@ namespace OnlineLibrary.Data.Contexts
 
 
 
-
         public OnlineLibraryIdentityDbContext(DbContextOptions<OnlineLibraryIdentityDbContext> options)
             : base(options)
         {
@@ -78,11 +77,11 @@ namespace OnlineLibrary.Data.Contexts
                 .HasForeignKey(cm => cm.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<CommunityBan>()
-                .HasOne(cb => cb.Community)
-                .WithMany()
-                .HasForeignKey(cb => cb.CommunityId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
+    .HasOne(cb => cb.Community)
+    .WithMany()
+    .HasForeignKey(cb => cb.CommunityId)
+    .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<CommunityBan>()
                 .HasOne(cb => cb.User)
                 .WithMany()

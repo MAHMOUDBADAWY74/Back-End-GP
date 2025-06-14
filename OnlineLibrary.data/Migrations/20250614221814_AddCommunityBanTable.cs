@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace OnlineLibrary.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AddCommunityBanTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,7 +65,6 @@ namespace OnlineLibrary.Data.Migrations
                     Category = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Author = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Summary = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Cover = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -512,6 +511,35 @@ namespace OnlineLibrary.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CommunityBan",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CommunityId = table.Column<long>(type: "bigint", nullable: false),
+                    BannedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BannedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CommunityBan", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CommunityBan_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CommunityBan_Communities_CommunityId",
+                        column: x => x.CommunityId,
+                        principalTable: "Communities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CommunityImages",
                 columns: table => new
                 {
@@ -561,7 +589,7 @@ namespace OnlineLibrary.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CommunityModerator",
+                name: "CommunityModerators",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -572,15 +600,15 @@ namespace OnlineLibrary.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommunityModerator", x => x.Id);
+                    table.PrimaryKey("PK_CommunityModerators", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CommunityModerator_AspNetUsers_ApplicationUserId",
+                        name: "FK_CommunityModerators_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CommunityModerator_Communities_CommunityId",
+                        name: "FK_CommunityModerators_Communities_CommunityId",
                         column: x => x.CommunityId,
                         principalTable: "Communities",
                         principalColumn: "Id",
@@ -786,6 +814,16 @@ namespace OnlineLibrary.Data.Migrations
                 column: "AdminId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CommunityBan_CommunityId",
+                table: "CommunityBan",
+                column: "CommunityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommunityBan_UserId",
+                table: "CommunityBan",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CommunityImages_CommunityId",
                 table: "CommunityImages",
                 column: "CommunityId");
@@ -801,13 +839,13 @@ namespace OnlineLibrary.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommunityModerator_ApplicationUserId",
-                table: "CommunityModerator",
+                name: "IX_CommunityModerators_ApplicationUserId",
+                table: "CommunityModerators",
                 column: "ApplicationUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommunityModerator_CommunityId",
-                table: "CommunityModerator",
+                name: "IX_CommunityModerators_CommunityId",
+                table: "CommunityModerators",
                 column: "CommunityId");
 
             migrationBuilder.CreateIndex(
@@ -968,13 +1006,16 @@ namespace OnlineLibrary.Data.Migrations
                 name: "ChatMessages");
 
             migrationBuilder.DropTable(
+                name: "CommunityBan");
+
+            migrationBuilder.DropTable(
                 name: "CommunityImages");
 
             migrationBuilder.DropTable(
                 name: "CommunityMembers");
 
             migrationBuilder.DropTable(
-                name: "CommunityModerator");
+                name: "CommunityModerators");
 
             migrationBuilder.DropTable(
                 name: "exchangeBooksRequests");

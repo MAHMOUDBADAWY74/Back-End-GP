@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
+using OnlineLibrary.Data.Contexts;
 
 namespace OnlineLibrary.Service.CommunityService
 {
@@ -20,9 +21,10 @@ namespace OnlineLibrary.Service.CommunityService
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMemoryCache _cache;
+        private readonly OnlineLibraryIdentityDbContext _context;
 
         public CommunityService(
-            IUnitOfWork unitOfWork,
+            IUnitOfWork unitOfWork, OnlineLibraryIdentityDbContext context,
             IMapper mapper,
             UserManager<ApplicationUser> userManager,
             IMemoryCache cache)
@@ -31,6 +33,7 @@ namespace OnlineLibrary.Service.CommunityService
             _mapper = mapper;
             _userManager = userManager;
             _cache = cache;
+            _context = context;
         }
 
         public async Task<IEnumerable<CommunityMember>> GetCommunityMembersAsync(long communityId)
@@ -48,7 +51,6 @@ namespace OnlineLibrary.Service.CommunityService
 
         public async Task<CommunityDto> CreateCommunityAsync(CreateCommunityDto dto, string adminId)
         {
-            // تحقق من الاسم قبل الإضافة
             var exists = (await _unitOfWork.Repository<Community>().GetAllAsync())
                 .Any(c => c.Name == dto.Name);
             if (exists)
@@ -97,7 +99,6 @@ namespace OnlineLibrary.Service.CommunityService
             communityDto.AdminName = $"{admin.firstName} {admin.LastName}";
             return communityDto;
         }
-
 
         public async Task<IEnumerable<CommunityDto>> GetAllCommunitiesAsync(string userId = null, bool isAdmin = false)
         {
@@ -272,7 +273,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
                 p => p.User,
-                p => p.User.UserProfile, 
+                p => p.User.UserProfile,
                 p => p.Community))
                 .Where(p => p.CommunityId.HasValue && p.CommunityId.Value == communityId)
                 .OrderByDescending(p => p.CreatedAt)
@@ -335,7 +336,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             var posts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
                 p => p.User,
-                p => p.User.UserProfile, 
+                p => p.User.UserProfile,
                 p => p.Community))
                 .Where(p => p.UserId == userId)
                 .OrderByDescending(p => p.CreatedAt)
@@ -401,7 +402,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             var allPosts = (await _unitOfWork.Repository<CommunityPost>().GetAllWithIncludeAsync(
                 p => p.User,
-                p => p.User.UserProfile, 
+                p => p.User.UserProfile,
                 p => p.Community))
                 .Where(p => p.CommunityId.HasValue)
                 .OrderByDescending(p => p.CreatedAt)
@@ -595,7 +596,7 @@ namespace OnlineLibrary.Service.CommunityService
 
             var comments = (await _unitOfWork.Repository<PostComment>().GetAllWithIncludeAsync(
                 c => c.User,
-                c => c.User.UserProfile)) 
+                c => c.User.UserProfile))
                 .Where(c => c.PostId == postId)
                 .OrderBy(c => c.CreatedAt)
                 .ToList();
@@ -758,50 +759,41 @@ namespace OnlineLibrary.Service.CommunityService
         public async Task AssignModeratorAsync(AssignModeratorDto dto, string adminId)
         {
             var community = await _unitOfWork.Repository<Community>().GetByIdAsync(dto.CommunityId);
-            if (community == null)
-                throw new Exception("Community not found.");
-
-            if (community.AdminId != adminId)
-                throw new Exception("Only the admin can assign moderators.");
-
-            var existingModerator = (await _unitOfWork.Repository<CommunityModerator>().GetAllAsync())
-                .FirstOrDefault(m => m.CommunityId == dto.CommunityId && m.ApplicationUserId == dto.UserId);
-
-            if (existingModerator != null)
-                throw new Exception("User is already a moderator.");
-
-            var moderator = new CommunityModerator
+            if (community == null || community.AdminId != adminId)
             {
-                ApplicationUserId = dto.UserId,
-                CommunityId = dto.CommunityId,
-                CreatedAt = DateTime.UtcNow
-            };
-            await _unitOfWork.Repository<CommunityModerator>().AddAsync(moderator);
-
-            
-            var member = (await _unitOfWork.Repository<CommunityMember>().GetAllAsync())
-                .FirstOrDefault(m => m.CommunityId == dto.CommunityId && m.UserId == dto.UserId);
-
-            if (member != null && member.IsModerator != true)
-            {
-                member.IsModerator = true;
-                _unitOfWork.Repository<CommunityMember>().Update(member);
+                throw new Exception("Only the community admin can assign moderators.");
             }
 
+            var moderator = await _userManager.FindByIdAsync(dto.UserId); 
+            if (moderator == null)
+            {
+                throw new Exception("Moderator user does not exist.");
+            }
+
+            var existingModerator = (await _unitOfWork.Repository<CommunityModerator>().GetAllAsync())
+                .FirstOrDefault(m => m.CommunityId == dto.CommunityId && m.ApplicationUserId == dto.UserId); 
+            if (existingModerator != null)
+            {
+                throw new Exception("User is already a moderator of this community.");
+            }
+
+            var communityModerator = new CommunityModerator
+            {
+                CommunityId = dto.CommunityId,
+                ApplicationUserId = dto.UserId 
+            };
+            await _unitOfWork.Repository<CommunityModerator>().AddAsync(communityModerator);
             await _unitOfWork.CountAsync();
         }
 
-
         public async Task<IEnumerable<ModeratorDto>> GetAllModeratorsAsync()
         {
-           
             var moderators = await _unitOfWork.Repository<CommunityModerator>().GetAllWithIncludeAsync(
                 m => m.ApplicationUser,
                 m => m.Community,
                 m => m.ApplicationUser.UserProfile
             );
 
-            
             var allUsers = _userManager.Users.ToList();
             var moderatorUserIds = new List<string>();
             foreach (var user in allUsers)
@@ -811,7 +803,6 @@ namespace OnlineLibrary.Service.CommunityService
                     moderatorUserIds.Add(user.Id);
             }
 
-            
             var filteredModerators = moderators
                 .Where(m => moderatorUserIds.Contains(m.ApplicationUserId))
                 .ToList();
@@ -827,7 +818,6 @@ namespace OnlineLibrary.Service.CommunityService
 
             return result;
         }
-
 
         public async Task RemoveModeratorAsync(long communityId, string userId, string adminId)
         {
@@ -1059,10 +1049,19 @@ namespace OnlineLibrary.Service.CommunityService
 
             if (!isAdmin)
             {
-                var requesterMember = (await _unitOfWork.Repository<CommunityMember>().GetAllAsync())
-                    .FirstOrDefault(m => m.CommunityId == communityId && m.UserId == requesterId);
+                var moderators = await _unitOfWork.Repository<CommunityModerator>().GetAllAsync();
+                var isCommunityModerator = moderators.Any(m => m.CommunityId == communityId && m.ApplicationUserId == requesterId);
 
-                isModerator = requesterMember?.IsModerator ?? false;
+                if (!isCommunityModerator)
+                {
+                    var members = await _unitOfWork.Repository<CommunityMember>().GetAllAsync();
+                    var requesterMember = members.FirstOrDefault(m => m.CommunityId == communityId && m.UserId == requesterId);
+                    isModerator = requesterMember?.IsModerator ?? false;
+                }
+                else
+                {
+                    isModerator = true;
+                }
             }
 
             if (!isAdmin && !isModerator)
@@ -1075,8 +1074,8 @@ namespace OnlineLibrary.Service.CommunityService
                 throw new Exception("Cannot ban the community admin.");
             }
 
-            var targetMember = (await _unitOfWork.Repository<CommunityMember>().GetAllAsync())
-                .FirstOrDefault(m => m.CommunityId == communityId && m.UserId == userId);
+            var targetMembers = await _unitOfWork.Repository<CommunityMember>().GetAllAsync();
+            var targetMember = targetMembers.FirstOrDefault(m => m.CommunityId == communityId && m.UserId == userId);
 
             if (targetMember != null && targetMember.IsModerator == true && !isAdmin)
             {
@@ -1085,8 +1084,19 @@ namespace OnlineLibrary.Service.CommunityService
 
             if (targetMember != null)
             {
+                // حذف اليوزر من CommunityMembers
                 _unitOfWork.Repository<CommunityMember>().Delete(targetMember);
-                await _unitOfWork.CountAsync();
+
+                // إضافة سجل في CommunityBan
+                var communityBan = new CommunityBan
+                {
+                    UserId = userId,
+                    CommunityId = communityId,
+                    BannedById = requesterId,
+                    BannedAt = DateTime.UtcNow
+                };
+                _context.Set<CommunityBan>().Add(communityBan); // استخدام _context مباشرة
+                await _unitOfWork.CountAsync(); // حفظ التغييرات
             }
         }
 
@@ -1173,6 +1183,13 @@ namespace OnlineLibrary.Service.CommunityService
             if (isMember)
             {
                 return false;
+            }
+
+            var banToRemove = await _unitOfWork.Repository<CommunityBan>().GetFirstOrDefaultAsync(b => b.CommunityId == communityId && b.UserId == userIdToUnban);
+            if (banToRemove != null)
+            {
+                _unitOfWork.Repository<CommunityBan>().Delete(banToRemove);
+                await _unitOfWork.CountAsync();
             }
 
             var member = new CommunityMember
