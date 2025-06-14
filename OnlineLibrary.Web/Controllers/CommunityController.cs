@@ -280,21 +280,37 @@ namespace OnlineLibrary.Web.Controllers
             if (community == null)
                 return NotFound("Community not found.");
 
-            var image = await _dbContext.CommunityImages.FirstOrDefaultAsync(i => i.CommunityId == communityId);
-            if (image != null)
+            var members = _dbContext.CommunityMembers.Where(m => m.CommunityId == communityId);
+            _dbContext.CommunityMembers.RemoveRange(members);
+
+            var posts = _dbContext.CommunityPosts.Where(p => p.CommunityId == communityId).ToList();
+            foreach (var post in posts)
+            {
+                var comments = _dbContext.PostComments.Where(c => c.PostId == post.Id);
+                _dbContext.PostComments.RemoveRange(comments);
+
+                var likes = _dbContext.PostLikes.Where(l => l.PostId == post.Id);
+                _dbContext.PostLikes.RemoveRange(likes);
+            }
+            _dbContext.CommunityPosts.RemoveRange(posts);
+
+            var images = _dbContext.CommunityImages.Where(i => i.CommunityId == communityId);
+            foreach (var image in images)
             {
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
                 if (System.IO.File.Exists(filePath))
                     System.IO.File.Delete(filePath);
-
-                _dbContext.CommunityImages.Remove(image);
             }
+            _dbContext.CommunityImages.RemoveRange(images);
 
             _dbContext.Communities.Remove(community);
+
             await _dbContext.SaveChangesAsync();
 
             return Ok(new { message = "Community removed successfully." });
         }
+
+
 
         [HttpPost("{communityId}/join")]
         [Authorize]
