@@ -131,16 +131,17 @@ namespace OnlineLibrary.Service.UserService
 
         public async Task<bool> ResetPassword(ResetPasswordDto input)
         {
-            var user = await _userManager.FindByIdAsync(input.Id.ToString());
+            var user = await _userManager.FindByEmailAsync(input.Email);
             if (user == null)
-                throw new Exception("Invalid User.");
+                return false;
 
-            var result = await _userManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
-            if (!result.Succeeded)
-                throw new Exception("Password reset failed.");
+            var passwordHasher = new PasswordHasher<ApplicationUser>();
+            user.PasswordHash = passwordHasher.HashPassword(user, input.NewPassword);
+            await _userManager.UpdateAsync(user);
 
             return true;
         }
+
 
         public async Task<bool> VerifyEmail(VerifyEmailDto input)
         {
