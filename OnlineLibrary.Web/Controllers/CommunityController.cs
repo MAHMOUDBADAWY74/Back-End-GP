@@ -122,7 +122,6 @@ namespace OnlineLibrary.Web.Controllers
             return Ok(communities);
         }
 
-
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<CommunityDto>> GetCommunity(long id)
@@ -152,7 +151,6 @@ namespace OnlineLibrary.Web.Controllers
 
             return Ok(community);
         }
-
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
@@ -215,6 +213,87 @@ namespace OnlineLibrary.Web.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+
+        [HttpPut("{communityId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateCommunity(long communityId, [FromForm] CreateCommunityDto dto)
+        {
+            var community = await _dbContext.Communities.FindAsync(communityId);
+            if (community == null)
+                return NotFound("Community not found.");
+
+            community.Name = dto.Name;
+            community.Description = dto.Description;
+
+            if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+            {
+                var image = await _dbContext.CommunityImages.FirstOrDefaultAsync(i => i.CommunityId == communityId);
+
+                if (image != null && !string.IsNullOrEmpty(image.ImageUrl))
+                {
+                    var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldFilePath))
+                        System.IO.File.Delete(oldFilePath);
+                }
+
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "community-images");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{dto.ImageFile.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.ImageFile.CopyToAsync(stream);
+                }
+
+                var imageUrl = $"/community-images/{uniqueFileName}";
+
+                if (image != null)
+                {
+                    image.ImageUrl = imageUrl;
+                    image.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    _dbContext.CommunityImages.Add(new CommunityImage
+                    {
+                        CommunityId = communityId,
+                        ImageUrl = imageUrl,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Community updated successfully." });
+        }
+
+        [HttpDelete("{communityId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RemoveCommunity(long communityId)
+        {
+            var community = await _dbContext.Communities.FindAsync(communityId);
+            if (community == null)
+                return NotFound("Community not found.");
+
+            var image = await _dbContext.CommunityImages.FirstOrDefaultAsync(i => i.CommunityId == communityId);
+            if (image != null)
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                    System.IO.File.Delete(filePath);
+
+                _dbContext.CommunityImages.Remove(image);
+            }
+
+            _dbContext.Communities.Remove(community);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Community removed successfully." });
         }
 
         [HttpPost("{communityId}/join")]
@@ -322,7 +401,7 @@ namespace OnlineLibrary.Web.Controllers
 
             var groupNotificationDto = new NotificationDto
             {
-                Id = 0, // إشعار عام للمجموعة، يمكن تجاهل Id أو وضع قيمة مناسبة
+                Id = 0,
                 NotificationType = NotificationTypes.PostAccepted,
                 Message = $"{username} added a new post to the community!",
                 ActorUserId = userId,
@@ -525,7 +604,6 @@ namespace OnlineLibrary.Web.Controllers
             var comments = await _communityService.GetPostCommentsAsync(postId);
             return Ok(comments);
         }
-
 
         [HttpPost("moderators/assign")]
         [Authorize(Roles = "Admin")]
