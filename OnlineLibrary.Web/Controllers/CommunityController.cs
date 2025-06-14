@@ -768,38 +768,42 @@ namespace OnlineLibrary.Web.Controllers
             return Ok();
         }
 
-        [HttpGet("{communityId}/members")]
-        [Authorize(Roles = "Admin,Moderator")]
-        public async Task<IActionResult> GetCommunityMembers(long communityId)
+        [HttpGet("members/my-communities")]
+        [Authorize(Roles = "Moderator")]
+        public async Task<IActionResult> GetMyCommunitiesMembers()
         {
             var userId = GetUserId();
-            var user = await _userManager.FindByIdAsync(userId);
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-            var isModerator = await _userManager.IsInRoleAsync(user, "Moderator");
 
-            if (isModerator && !isAdmin)
-            {
-                var isCommunityModerator = await _dbContext.CommunityModerators
-                    .AnyAsync(m => m.CommunityId == communityId && m.ApplicationUserId == userId);
+            
+            var communityIds = await _dbContext.CommunityModerators
+                .Where(m => m.ApplicationUserId == userId && m.CommunityId != null)
+                .Select(m => m.CommunityId)
+                .ToListAsync();
 
-                if (!isCommunityModerator)
-                    return Forbid("You are not a moderator in this community.");
-            }
+            if (!communityIds.Any())
+                return NotFound("You are not assigned as a moderator to any community.");
 
             var members = await _dbContext.CommunityMembers
-                .Where(m => m.CommunityId == communityId)
+                .Where(m => m.CommunityId.HasValue && communityIds.Contains(m.CommunityId.Value)) 
                 .Join(_dbContext.Users, m => m.UserId, u => u.Id, (m, u) => new
                 {
                     u.Id,
                     u.UserName,
                     u.Email,
                     u.firstName,
-                    u.LastName
+                    u.LastName,
+                    m.CommunityId
                 })
                 .ToListAsync();
 
             return Ok(members);
         }
+
+
+
+
+
+
 
         [HttpPost("{communityId}/ban/{userId}")]
         [Authorize(Roles = "Admin,Moderator")]
