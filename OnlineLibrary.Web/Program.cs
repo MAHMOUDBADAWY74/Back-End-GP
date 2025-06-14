@@ -17,6 +17,7 @@ using OnlineLibrary.Web.Hubs;
 using OnlineLibrary.Service.CommunityService.Dtos;
 using OnlineLibrary.Service.ContentModerationService;
 using System.Text.Json;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace OnlineLibrary.Web
 {
@@ -151,6 +152,12 @@ namespace OnlineLibrary.Web
             app.UseAuthorization();
 
             app.UseStaticFiles();
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".epub"] = "application/epub+zip";
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ContentTypeProvider = provider
+            });
 
             try
             {
