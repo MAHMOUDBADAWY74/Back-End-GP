@@ -5,6 +5,7 @@ using OnlineLibrary.Service.UserService;
 using OnlineLibrary.Service.HandleResponse;
 using OnlineLibrary.Data.Contexts;
 using OnlineLibrary.Data.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace OnlineLibrary.Web.Controllers
 {
@@ -156,8 +157,16 @@ namespace OnlineLibrary.Web.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto input)
         {
-            var result = await _userService.ResetPassword(input);
-            return Ok(new { success = result });
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == input.Email);
+            if (user == null)
+                return BadRequest(new { message = "User not found." });
+
+            var passwordHasher = new PasswordHasher<ApplicationUser>();
+            user.PasswordHash = passwordHasher.HashPassword(user, input.NewPassword);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Password reset successfully." });
         }
+
     }
 }
